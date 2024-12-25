@@ -3,10 +3,16 @@ from django.contrib.auth.password_validation import validate_password
 from account.models import UserMoreInfoModel
 from rest_framework import serializers
 
+class UserMoreInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserMoreInfoModel
+        fields = "__all__"
+
 class UserSerializer(serializers.ModelSerializer):
+    usermoreinfo = UserMoreInfoSerializer()
     class Meta:
         model = User
-        fields = "__all__"
+        exclude = ("password",)
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -30,11 +36,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-class UserMoreInfoSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    class Meta:
-        model = UserMoreInfoModel
-        fields = "__all__"
 
 class UserMoreInfoCreateSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field="username")

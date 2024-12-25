@@ -4,11 +4,12 @@ from django.contrib.auth.models import User
 from account.models import UserMoreInfoModel
 from account.api.serializers import UserSerializer, UserCreateSerializer, UserMoreInfoCreateSerializer, UserMoreInfoSerializer
 from account.api.permissions import IsSuperUser, IsOwner,  IsUserOwner
+from django.shortcuts import get_object_or_404
 
 
 class UserListAPIView(ListAPIView):
-    queryset = UserMoreInfoModel.objects.all()
-    serializer_class = UserMoreInfoSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
 
 class UserCreateAPIView(CreateAPIView):
@@ -23,12 +24,17 @@ class UserMoreInfoCreateAPIView(CreateAPIView):
 
 class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
-    serializer_class = UserMoreInfoModel
+    serializer_class = UserCreateSerializer
     permission_classes = (IsOwner,)
-    lookup_field = "id"
+    lookup_field = "username"
 
 class UserMoreInfoRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = UserMoreInfoModel.objects.all()
-    serializer_class = UserMoreInfoSerializer
+    serializer_class = UserMoreInfoCreateSerializer
+    def get_object(self):
+        username = self.kwargs.get("username")
+        user = get_object_or_404(User, username=username)
+        return get_object_or_404(UserMoreInfoModel, user=user)
     permission_classes = (IsUserOwner,)
-    lookup_field = "id"
+    lookup_field = "username"
+    
