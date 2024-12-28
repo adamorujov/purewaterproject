@@ -241,6 +241,7 @@ class ChangeFilterModel(models.Model):
     changers = models.ManyToManyField(FilterChangerModel, verbose_name="Filter Dəyişdirənlər", related_name="changer_changes", blank=True)
     date = models.DateField("Dəyişim tarixi")
     payment_status = models.CharField("Ödəniş statusu", choices=PAYMENT_STATUS, max_length=2, default="OS")
+    payment_amount = models.FloatField("Ödəniş miqdarı", default=0)
 
     class Meta:
         verbose_name = "Filtir dəyişimi"

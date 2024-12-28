@@ -115,13 +115,6 @@ class DailyPaymentCreateSerializer(serializers.ModelSerializer):
         model = DailyPaymentModel
         fields = "__all__"
 
-# for changefilter list
-class ChangeFilterSerializer(serializers.ModelSerializer):
-    registration = RegistrationSerializer()
-    class Meta:
-        model = ChangeFilterModel
-        fields = "__all__"
-
 # for changefilter retrieve, update, delete
 class ChangeFilterUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,6 +125,14 @@ class ChangeFilterUpdateSerializer(serializers.ModelSerializer):
 class FilterChangerSerializer(serializers.ModelSerializer):
     class Meta:
         model = FilterChangerModel
+        fields = "__all__"
+
+# for changefilter list
+class ChangeFilterSerializer(serializers.ModelSerializer):
+    registration = RegistrationSerializer()
+    changers = FilterChangerSerializer(many=True)
+    class Meta:
+        model = ChangeFilterModel
         fields = "__all__"
 
 class ServicerSerializer(serializers.ModelSerializer):
