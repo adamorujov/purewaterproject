@@ -56,6 +56,13 @@ class DistrictVillageListAPIView(ListAPIView):
     serializer_class = VillageSerializer
     permission_classes = (IsAdminUser,)
 
+class CityVillageListAPIView(ListAPIView):
+    def get_queryset(self):
+        id = self.kwargs.get("id")
+        return VillageModel.objects.filter(city__id=id)
+    serializer_class = VillageSerializer
+    permission_classes = (IsAdminUser,)
+
 class VillageRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = VillageModel.objects.all()
     serializer_class = VillageSerializer

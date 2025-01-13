@@ -10,6 +10,7 @@ urlpatterns = [
     path('district-city-retrieve/<int:id>/', views.DistrictCityRetrieveAPIView.as_view(), name="district-city-retrieve"),
     path('village-list-create/', views.VillageListCreateAPIView.as_view(), name="village-list-create"),
     path('district-village-list/<int:id>/', views.DistrictVillageListAPIView.as_view(), name="district-village-list"),
+    path('city-village-list/<int:id>/', views.CityVillageListAPIView.as_view(), name="city-village-list"),
     path('village-retrieve-update-destroy/<int:id>/', views.VillageRetrieveUpdateDestroyAPIView.as_view(), name="village-retrieve-update-destroy"),
     path('product-list-create/', views.ProductListCreateAPIView.as_view(), name="product-list-create"),
     path('product-retrieve-update-destroy/<int:id>/', views.ProductRetrieveUpdateDestroyAPIView.as_view(), name="product-retrieve-update-destroy"),
