@@ -17,9 +17,9 @@ class ClientModel(models.Model):
     client_product = models.ForeignKey(ProductModel, verbose_name="Məhsul", on_delete=models.SET_NULL, related_name="product_clients", blank=True, null=True)
     client_gifts = models.ManyToManyField(GiftModel, verbose_name="Hədiyyələr", related_name="gift_clients", blank=True)
     address = models.TextField("Ünvan")
-    city = models.OneToOneField(CityModel, verbose_name="Şəhər", on_delete=models.SET_NULL, related_name="city_client", blank=True, null=True)
-    district = models.OneToOneField(DistrictModel, verbose_name="Rayon", on_delete=models.SET_NULL, related_name='district_client', blank=True, null=True)
-    village = models.OneToOneField(VillageModel, verbose_name="Kənd", on_delete=models.SET_NULL, related_name="village_client", blank=True, null=True)
+    city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.SET_NULL, related_name="city_clients", blank=True, null=True)
+    district = models.ForeignKey(DistrictModel, verbose_name="Rayon", on_delete=models.SET_NULL, related_name='district_clients', blank=True, null=True)
+    village = models.ForeignKey(VillageModel, verbose_name="Kənd", on_delete=models.SET_NULL, related_name="village_clients", blank=True, null=True)
     note = models.TextField("Qeyd", blank=True, null=True)
     date = models.DateField("Satış tarixi", auto_now_add=True)
 

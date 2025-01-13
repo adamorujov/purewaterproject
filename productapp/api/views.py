@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from productapp.models import CityModel, DistrictModel, VillageModel, ProductModel, GiftModel, DiscountModel
 from productapp.api.serializers import CitySerializer, DistrictSerializer, VillageSerializer, ProductSerializer, GiftSerializer, DiscountSerializer
 from rest_framework.permissions import IsAdminUser
@@ -27,10 +27,19 @@ class CityDistrictListAPIView(ListAPIView):
         return DistrictModel.objects.filter(city__id=id)
     serializer_class = DistrictSerializer
     permission_classes = (IsAdminUser,)
-
+        
 class DistrictRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = DistrictModel.objects.all()
     serializer_class = DistrictSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = "id"
+
+class DistrictCityRetrieveAPIView(RetrieveAPIView):
+    def get_object(self):
+        id = self.kwargs.get("id")
+        district = DistrictModel.objects.get(id=id)
+        return district.city
+    serializer_class = CitySerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
 

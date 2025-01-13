@@ -30,6 +30,9 @@ class VillageModel(models.Model):
         verbose_name = "Kənd"
         verbose_name_plural = "Kəndlər"
 
+    def save(self, *args, **kwargs):
+        pass
+
     def __str__(self):
         return self.village_name
 

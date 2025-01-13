@@ -7,6 +7,7 @@ urlpatterns = [
     path('district-list-create/', views.DistrictListCreateAPIView.as_view(), name="district-list-create"),
     path('city-district-list/<int:id>/', views.CityDistrictListAPIView.as_view(), name="city-district-list"),
     path('district-retrieve-update-destroy/<int:id>/', views.DistrictRetrieveUpdateDestroyAPIView.as_view(), name="district-retrieve-update-destroy"),
+    path('district-city-retrieve/<int:id>/', views.DistrictCityRetrieveAPIView.as_view(), name="district-city-retrieve"),
     path('village-list-create/', views.VillageListCreateAPIView.as_view(), name="village-list-create"),
     path('district-village-list/<int:id>/', views.DistrictVillageListAPIView.as_view(), name="district-village-list"),
     path('village-retrieve-update-destroy/<int:id>/', views.VillageRetrieveUpdateDestroyAPIView.as_view(), name="village-retrieve-update-destroy"),
