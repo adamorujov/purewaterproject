@@ -138,6 +138,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             if dp_serializer.is_valid():
                 dp_serializer.save()
                 instance.status = "O"
+                instance.save()
                 instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
