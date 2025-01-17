@@ -133,34 +133,34 @@ class InstallmentInfoModel(models.Model):
         verbose_name_plural = "Taksit məlumatları"
 
     def save(self, *args, **kwargs):
-        if self.id and not InstallmentModel.objects.filter(installmentinfo=self).exists():
-            day = self.start_date.day
-            month = self.start_date.month
-            year = self.start_date.year
-            InstallmentModel.objects.create(
-                installmentinfo = self,
-                installment_date = date(year, month, day),
-                installment_amount = self.total_amount - self.payment_amount,
-                payment_amount = self.total_amount - self.payment_amount,
-                debt_amount = 0
-            )
-            for i in range(self.installment_count):
-                month = month + 1
-                if month == 13:
-                    month = 1
-                    year = year + 1
-                elif month in (4, 6, 9, 11) and day == 31:
-                    day = 30
-                elif month == 2 and day > 28:
-                    day = 28
+        if self.id:
+            if not InstallmentModel.objects.filter(installmentinfo=self).exists():
+                day = self.start_date.day
+                month = self.start_date.month
+                year = self.start_date.year
                 InstallmentModel.objects.create(
                     installmentinfo = self,
                     installment_date = date(year, month, day),
-                    installment_amount = self.payment_amount / self.installment_count,
-                    payment_amount = 0,
-                    debt_amount = self.payment_amount / self.installment_count,
+                    installment_amount = self.total_amount - self.payment_amount,
+                    payment_amount = self.total_amount - self.payment_amount,
+                    debt_amount = 0
                 )
-        elif self.id:
+                for i in range(self.installment_count):
+                    month = month + 1
+                    if month == 13:
+                        month = 1
+                        year = year + 1
+                    elif month in (4, 6, 9, 11) and day == 31:
+                        day = 30
+                    elif month == 2 and day > 28:
+                        day = 28
+                    InstallmentModel.objects.create(
+                        installmentinfo = self,
+                        installment_date = date(year, month, day),
+                        installment_amount = self.payment_amount / self.installment_count,
+                        payment_amount = 0,
+                        debt_amount = self.payment_amount / self.installment_count,
+                    )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
             overdue_amounts = [installment.debt_amount for installment in self.installments.filter(status="OM") if installment.installment_date < datetime.now().date()]
             self.paid_amount = sum(paid_amounts)
