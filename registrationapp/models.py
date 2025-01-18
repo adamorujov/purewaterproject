@@ -190,6 +190,7 @@ class InstallmentModel(models.Model):
     debt_amount = models.FloatField("Qalıq borc")
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
     status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
+    message_status = models.BooleanField("Mesaj statusu", default=False)
 
     class Meta:
         verbose_name = "Taksit"

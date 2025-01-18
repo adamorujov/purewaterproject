@@ -19,7 +19,7 @@ from accounting.models import DailyPaymentModel
 from django.utils import timezone
 from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
-import openpyxl
+import pywhatkit as kit
 
 # ---------- Client APIs -------------
 class ClientCreateAPIView(CreateAPIView):
@@ -138,10 +138,28 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             if dp_serializer.is_valid():
                 dp_serializer.save()
                 instance.status = "O"
+                instance.message_status = False
                 instance.save()
                 instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "whatsapp":
+            client = instance.installmentinfo.registration.client
+            message = "%s %s\n\n%s\n%s\n\nÖdəniş %0.2f azn\n\nÖdəniş tarixi %s\n\nQalıq %0.2f\n" % (
+                client.name, client.father_name, client.phone_number1, client.phone_number2, 
+                instance.payment_amount, instance.payment_date, instance.installmentinfo.remaining_amount
+            ) if client.phone_number2 else "%s %s\n\n%s\n\nÖdəniş %0.2f azn\n\nÖdəniş tarixi %s\n\nQalıq %0.2f\n" % (
+                client.name, client.father_name, client.phone_number1,
+                instance.payment_amount, instance.payment_date, instance.installmentinfo.remaining_amount
+            )
+            message += client.city.city_name + " ş. " if client.city else ""
+            message += client.district.district_name + " r. " if client.district else ""
+            message += client.village.village_name + " k. " if client.village else ""
+
+            kit.sendwhatmsg_instantly(client.phone_number1, message)
+            instance.message_status = True
+            instance.save()
+            return Response("Mesaj göndərildi.", status=status.HTTP_200_OK)
         else:
             return Response(
                 {"error": "Invalid action specified."},
