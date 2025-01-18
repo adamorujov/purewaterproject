@@ -25,8 +25,8 @@ urlpatterns = [
     path('filter-changer-list-create/', views.FilterChangerListCreateAPIView.as_view(), name="filter-changer-list-create"),
     path('filter-changer-retrieve-update-destroy/<int:id>/', views.FilterChangerRetrieveUpdateDestroyAPIView.as_view(), name="filter-changer-retrieve-update-destroy"),
     path('servicer-list-create/', views.ServicerListCreateAPIView.as_view(), name="servicer-list-create"),
-    path('servicer-retrieve-update-destroy/', views.ServicerRetrieveUpdateDestroyAPIView.as_view(), name="servicer-list-create"),
+    path('servicer-retrieve-update-destroy/<int:id>/', views.ServicerRetrieveUpdateDestroyAPIView.as_view(), name="servicer-list-create"),
     path('shuttle-service-list/', views.ShuttleServiceListAPIView.as_view(), name="shuttle-service-list"),
     path('shuttle-service-create/', views.ShuttleServiceCreateAPIView.as_view(), name="shuttle-service-create"),
-    path('shuttle-service-retrieve-update-destroy/', views.ShuttleServiceRetrieveUpdateDestroyAPIView.as_view(), name="shuttle-service-retrieve-update-destroy"),
+    path('shuttle-service-retrieve-update-destroy/<int:id>/', views.ShuttleServiceRetrieveUpdateDestroyAPIView.as_view(), name="shuttle-service-retrieve-update-destroy"),
 ]
