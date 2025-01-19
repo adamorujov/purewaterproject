@@ -49,7 +49,8 @@ class SellerModel(models.Model):
         ("G", "Gross")
     )
     name = models.CharField("Ad, Soyad", max_length=50)
-    phone_number = models.CharField("Telefon nömrəsi", max_length=20, blank=True, null=True)
+    phone_number1 = models.CharField("Telefon nömrəsi 1", max_length=20, blank=True, null=True)
+    phone_number2 = models.CharField("Telefon nömrəsi 2", max_length=20, blank=True, null=True)
     salary = models.FloatField("Maaş", blank=True, null=True)
     salary_type = models.CharField("Maaş növü", choices=SALARY_TYPES, max_length=1, blank=True, null=True)
     premier = models.FloatField("Premyera", blank=True, null=True)
@@ -210,7 +211,8 @@ class InstallmentModel(models.Model):
     
 class FilterChangerModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=100)
-    phone_number = models.CharField("Telefon nömrəsi", max_length=20, blank=True, null=True)
+    phone_number1 = models.CharField("Telefon nömrəsi 1", max_length=20, blank=True, null=True)
+    phone_number2 = models.CharField("Telefon nömrəsi 2", max_length=20, blank=True, null=True)
     salary = models.FloatField("Maaş", default=0)
 
     class Meta:
@@ -266,7 +268,8 @@ class ChangeFilterModel(models.Model):
     
 class ServicerModel(models.Model):
     name = models.CharField("Ad, soyad", max_length=100)
-    phone_number = models.CharField("Telefon nömrəsi", max_length=20, blank=True, null=True)
+    phone_number1 = models.CharField("Telefon nömrəsi 1", max_length=20, blank=True, null=True)
+    phone_number2 = models.CharField("Telefon nömrəsi 2", max_length=20, blank=True, null=True)
     salary = models.FloatField("Maaş", default=0)
 
     class Meta:
