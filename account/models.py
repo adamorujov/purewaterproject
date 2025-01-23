@@ -6,6 +6,7 @@ class UserMoreInfoModel(models.Model):
     profile_photo = models.ImageField(upload_to='profile_photos/')
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "İstifadəçi məlumatları"
         verbose_name_plural = "İstifadəçilərin məlumatları"
 

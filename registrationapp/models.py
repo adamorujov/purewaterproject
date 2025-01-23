@@ -24,6 +24,7 @@ class ClientModel(models.Model):
     date = models.DateField("Satış tarixi", auto_now_add=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Müştəri"
         verbose_name_plural = "Müştərilər"
     
@@ -56,6 +57,7 @@ class SellerModel(models.Model):
     premier = models.FloatField("Premyera", blank=True, null=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Satıcı"
         verbose_name_plural = "Satıcılar"
 
@@ -74,6 +76,7 @@ class RegistrationModel(models.Model):
     status = models.CharField("Status", choices=STATUS, max_length=2, default="A")
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Qeydiyyat"
         verbose_name_plural = "Qeydiyyatlar"
 
@@ -130,6 +133,7 @@ class InstallmentInfoModel(models.Model):
     start_date = models.DateField(auto_now_add=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Taksit məlumatı"
         verbose_name_plural = "Taksit məlumatları"
 
@@ -171,8 +175,6 @@ class InstallmentInfoModel(models.Model):
 
     def __str__(self):
         return self.registration.client.name
-
-
 
 class InstallmentModel(models.Model):
     PAYMENT_TYPES = (
@@ -216,6 +218,7 @@ class FilterChangerModel(models.Model):
     salary = models.FloatField("Maaş", default=0)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Filter dəyişdirən"
         verbose_name_plural = "Filter dəyişdirənlər"
 
@@ -247,6 +250,7 @@ class ChangeFilterModel(models.Model):
     payment_amount = models.FloatField("Ödəniş miqdarı", default=0)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Filtir dəyişimi"
         verbose_name_plural = "Filtir dəyişimləri"
 
@@ -273,6 +277,7 @@ class ServicerModel(models.Model):
     salary = models.FloatField("Maaş", default=0)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Servis edən şəxs"
         verbose_name_plural = "Servis edən şəxslər"
 
@@ -299,6 +304,7 @@ class ShuttleServiceModel(models.Model):
     status = models.CharField("Status", choices=SERVICE_STATUS, max_length=2, default="OM")
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Servis xidməti"
         verbose_name_plural = "Servis xidmətləri"
 

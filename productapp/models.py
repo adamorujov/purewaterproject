@@ -4,6 +4,7 @@ class CityModel(models.Model):
     city_name = models.CharField("Şəhər", max_length=30)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Şəhər"
         verbose_name_plural = "Şəhərlər"
 
@@ -15,6 +16,7 @@ class DistrictModel(models.Model):
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="districts", blank=True, null=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Rayon"
         verbose_name_plural = "Rayonlar"
 
@@ -27,6 +29,7 @@ class VillageModel(models.Model):
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="city_villages", blank=True, null=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Kənd"
         verbose_name_plural = "Kəndlər"
 
@@ -38,6 +41,7 @@ class ProductModel(models.Model):
     price = models.FloatField("Məhsulun qiyməti", default=0)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Məhsul"
         verbose_name_plural = "Məhsullar"
 
@@ -48,6 +52,7 @@ class GiftModel(models.Model):
     name = models.TextField("Hədiyyənin adı")
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Hədiyyə"
         verbose_name_plural = "Hədiyyələr"
 
@@ -61,6 +66,7 @@ class DiscountModel(models.Model):
     amount = models.FloatField("Endirimin miqdarı", blank=True, null=True)
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Endirim"
         verbose_name_plural = "Endirimlər"
 

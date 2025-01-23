@@ -7,6 +7,7 @@ class DailyPaymentModel(models.Model):
     date = models.DateField("Ödəniş tarixi")
 
     class Meta:
+        ordering = ("-id",)
         verbose_name = "Günlük ödəniş"
         verbose_name_plural = "Günlük ödənişlər"
 

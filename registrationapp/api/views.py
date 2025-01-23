@@ -159,10 +159,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             instance.save()
             return Response({"phone_number": client.phone_number1, "message": message}, status=status.HTTP_200_OK)
         else:
-            return Response(
-                {"error": "Invalid action specified."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
 class InstallmentDestroyAPIView(DestroyAPIView):
     queryset = InstallmentModel.objects.all()
@@ -193,7 +190,7 @@ class OverduePaymentListAPIView(ListAPIView):
                 When(status="OM", then=0),
                 output_field=IntegerField()
             )
-        ).order_by('status_order')
+        ).order_by('status_order').order_by("-id")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 
