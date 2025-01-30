@@ -6,16 +6,17 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from registrationapp.models import (
     ClientModel, SellerModel, PaymentModel, RegistrationModel, InstallmentInfoModel, 
-    InstallmentModel, ChangeFilterModel, FilterChangerModel, ServicerModel, ShuttleServiceModel
+    InstallmentModel, ChangeFilterModel, FilterChangerModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel
 )
 from registrationapp.api.serializers import (
     ClientCreateSerializer, PaymentCreateSerializer, SellerSerializer, SellerCreateSerializer, RegistrationSerializer, RegistrationCreateSerializer,
     InstallmentInfoSerializer, InstallmentInfoUpdateSerializer, InstallmentInfoInstallmentSerializer, 
     InstallmentSerializer, InstallmentUpdateSerializer, InstallmentDestroySerializer,
     DailyPaymentSerializer, DailyPaymentCreateSerializer, ChangeFilterSerializer, ChangeFilterUpdateSerializer, FilterChangerSerializer,
-    ServicerSerializer, ShuttleServiceSerializer, ShuttleServiceCreateSerializer
+    ServicerSerializer, ShuttleServiceSerializer, ShuttleServiceCreateSerializer, 
+    ExtraPaymentSerializer, PersonaDailyPaymentSerializer, PersonaDailyPaymentCreateSerializer
 )
-from accounting.models import DailyPaymentModel
+from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from django.utils import timezone
 from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
@@ -48,6 +49,30 @@ class SellerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = SellerCreateSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "payment":
+            payment_data = {
+                "seller": instance.id,
+                "month": request.data.get("month"),
+                "date": request.data.get("date")
+            }
+            dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
+            if dp_serializer.is_valid():
+                dp_serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"errors": "Invalid action specified!"}, status=status.HTTP_400_BAD_REQUEST)
 
 # ----------- Payment APIs --------------
 class PaymentCreateAPIView(CreateAPIView):
@@ -92,6 +117,28 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     serializer_class = InstallmentInfoUpdateSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "refund":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                instance.registration.status = "IO"
+                instance.registration.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid action specified"}, status=status.HTTP_400_BAD_REQUEST)
+            
 
 
 # ----------- Installment APIs ------------
@@ -160,13 +207,65 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             return Response({"phone_number": client.phone_number1, "message": message}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
-
+        
 class InstallmentDestroyAPIView(DestroyAPIView):
     queryset = InstallmentModel.objects.all()
     serializer_class = InstallmentDestroySerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
 
+# ----------- ExtraPayment APIs ------------
+class InstallmentInfoExtraPaymentListAPIView(ListAPIView):
+    def get_queryset(self):
+        id = self.kwargs.get("id")
+        installmentinfo = get_object_or_404(InstallmentInfoModel, registration__id=id)
+        return ExtraPaymentModel.objects.filter(installment__installmentinfo=installmentinfo)
+    serializer_class = ExtraPaymentSerializer
+    permission_classes = (IsAdminUser,)
+
+class ExtraPaymentCreateAPIView(CreateAPIView):
+    queryset = ExtraPaymentModel.objects.all()
+    serializer_class = ExtraPaymentSerializer
+    permission_classes = (IsAdminUser,)
+
+class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    queryset = ExtraPaymentModel.objects.all()
+    serializer_class = ExtraPaymentSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "payment":
+            payment_data = {
+                "installment": instance.installment.id,
+                "month": request.data.get("month"),
+                "date": instance.payment_date
+            }
+            dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
+            if dp_serializer.is_valid():
+                dp_serializer.save()
+                instance.status = "O"
+                instance.message_status = False
+                instance.save()
+                return Response(dp_serializer.data, status=status.HTTP_200_OK)
+            return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
+
+class ExtraPaymentDestroyAPIView(DestroyAPIView):
+    queryset = ExtraPaymentModel.objects.all()
+    serializer_class = ExtraPaymentSerializer
+    permission_classes = (IsAdminUser,)
+    
 # ---------- DailyPayment APIs ------------
 class DailyPaymentListAPIView(ListAPIView):
     queryset = DailyPaymentModel.objects.all()
@@ -176,6 +275,18 @@ class DailyPaymentListAPIView(ListAPIView):
 class DailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = DailyPaymentModel.objects.all()
     serializer_class = DailyPaymentCreateSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = "id"
+
+# ---------- Persona DailyPayment APIs -----------------
+class PersonaDailyPaymentListAPIView(ListAPIView):
+    queryset = PersonaDailyPaymentModel.objects.all()
+    serializer_class = PersonaDailyPaymentSerializer
+    permission_classes = (IsAdminUser,)
+
+class PersonaDailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = PersonaDailyPaymentModel.objects.all()
+    serializer_class = PersonaDailyPaymentCreateSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
 
@@ -219,6 +330,30 @@ class FilterChangerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "payment":
+            payment_data = {
+                "changer": instance.id,
+                "month": request.data.get("month"),
+                "date": request.data.get("date")
+            }
+            dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
+            if dp_serializer.is_valid():
+                dp_serializer.save()
+                return Response(dp_serializer.data, status=status.HTTP_200_OK)
+            return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
+
 # ------------ Servicer APIs ---------------
 class ServicerListCreateAPIView(ListCreateAPIView):
     queryset = ServicerModel.objects.all()
@@ -230,6 +365,30 @@ class ServicerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ServicerSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "payment":
+            payment_data = {
+                "servicer": instance.id,
+                "month": request.data.get("month"),
+                "date": request.data.get("date")
+            }
+            dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
+            if dp_serializer.is_valid():
+                dp_serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
 # ----------- ShuttleService APIs -----------
 class ShuttleServiceListAPIView(ListAPIView):

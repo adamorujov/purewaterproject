@@ -2,9 +2,9 @@ from rest_framework import serializers
 from registrationapp.models import (
     ClientModel, SellerModel, PaymentModel, RegistrationModel,
     InstallmentInfoModel, InstallmentModel, ChangeFilterModel, FilterChangerModel,
-    ServicerModel, ShuttleServiceModel                         
+    ServicerModel, ShuttleServiceModel, ExtraPaymentModel                        
 )
-from accounting.models import DailyPaymentModel
+from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from productapp.api.serializers import ProductSerializer, CitySerializer, DistrictSerializer, VillageSerializer, GiftSerializer
 from django.utils import timezone
 
@@ -110,6 +110,12 @@ class InstallmentDestroySerializer(serializers.ModelSerializer):
         model = InstallmentModel
         fields = "__all__"
 
+# for extrapayment list
+class ExtraPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtraPaymentModel
+        fields = "__all__"
+
 # for dailypayment list
 class DailyPaymentSerializer(serializers.ModelSerializer):
     installment = InstallmentSerializer()
@@ -143,11 +149,13 @@ class ChangeFilterSerializer(serializers.ModelSerializer):
         model = ChangeFilterModel
         fields = "__all__"
 
+# for servicer list, create, update, destroy
 class ServicerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicerModel
         fields = "__all__"
 
+# for shuttle service list
 class ShuttleServiceSerializer(serializers.ModelSerializer):
     registration = RegistrationSerializer()
     servicers = ServicerSerializer(many=True)
@@ -155,8 +163,23 @@ class ShuttleServiceSerializer(serializers.ModelSerializer):
         model = ShuttleServiceModel
         fields = "__all__"
 
+# for shuttle service retrive, create, update, destroy
 class ShuttleServiceCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShuttleServiceModel
         fields = "__all__"
 
+# for personadailypayment list
+class PersonaDailyPaymentSerializer(serializers.ModelSerializer):
+    seller = SellerSerializer()
+    changer = FilterChangerSerializer()
+    servicer = ServicerSerializer()
+    class Meta:
+        model = PersonaDailyPaymentModel
+        fields = "__all__"
+
+# for personadailypayment create, retrieve, update, destroy
+class PersonaDailyPaymentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PersonaDailyPaymentModel
+        fields = "__all__"

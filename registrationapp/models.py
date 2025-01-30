@@ -39,7 +39,7 @@ class PaymentModel(models.Model):
 
     class Meta:
         verbose_name = "Ödəniş"
-        verbose_name_plural = "Ödəniş məlumatları" 
+        verbose_name_plural = "Ödəniş məlumatları"
 
     def __str__(self):
         return self.discount_type
@@ -110,6 +110,13 @@ class RegistrationModel(models.Model):
             ChangeFilterModel.objects.create(
                 registration = self,
                 category = "T",
+                period = 1.5,
+                date = get_date(self.client.date, 1.5),
+                change_status = "DM",
+            )
+            ChangeFilterModel.objects.create(
+                registration = self,
+                category = "FT",
                 period = 2,
                 date = get_date(self.client.date, 2),
                 change_status = "DM",
@@ -130,7 +137,7 @@ class InstallmentInfoModel(models.Model):
 
     payment_amount = models.FloatField("Ödəniş miqdarı")
     installment_count = models.IntegerField("Taksit sayı")
-    start_date = models.DateField(auto_now_add=True)
+    start_date = models.DateField(default=timezone.now)
 
     class Meta:
         ordering = ("-id",)
@@ -147,7 +154,7 @@ class InstallmentInfoModel(models.Model):
                     installmentinfo = self,
                     installment_date = date(year, month, day),
                     installment_amount = self.total_amount - self.payment_amount,
-                    payment_amount = self.total_amount - self.payment_amount,
+                    payment_amount = 0,
                     debt_amount = 0
                 )
                 for i in range(self.installment_count):
@@ -159,13 +166,24 @@ class InstallmentInfoModel(models.Model):
                         day = 30
                     elif month == 2 and day > 28:
                         day = 28
-                    InstallmentModel.objects.create(
-                        installmentinfo = self,
-                        installment_date = date(year, month, day),
-                        installment_amount = self.payment_amount / self.installment_count,
-                        payment_amount = 0,
-                        debt_amount = self.payment_amount / self.installment_count,
-                    )
+                    remainder = 0
+                    if i < self.installment_count - 1:
+                        InstallmentModel.objects.create(
+                            installmentinfo = self,
+                            installment_date = date(year, month, day),
+                            installment_amount = round(self.payment_amount / self.installment_count),
+                            payment_amount = 0,
+                            debt_amount = self.payment_amount / self.installment_count,
+                        )
+                        remainder += self.payment_amount / self.installment_count - round(self.payment_amount / self.installment_count)
+                    else:
+                        InstallmentModel.objects.create(
+                            installmentinfo = self,
+                            installment_date = date(year, month, day),
+                            installment_amount = self.payment_amount / self.installment_count + remainder,
+                            payment_amount = 0,
+                            debt_amount = self.payment_amount / self.installment_count,
+                        )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
             overdue_amounts = [installment.debt_amount for installment in self.installments.filter(status="OM") if installment.installment_date < datetime.now().date()]
             self.paid_amount = sum(paid_amounts)
@@ -201,6 +219,9 @@ class InstallmentModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.debt_amount = self.installment_amount - self.payment_amount
+        if ExtraPaymentModel.objects.filter(installment=self).exists():
+            sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
+            self.debt_amount -= sum_extra_payments
         return super(InstallmentModel, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
@@ -210,6 +231,24 @@ class InstallmentModel(models.Model):
 
     def __str__(self):
         return self.installmentinfo.registration.client.name
+    
+class ExtraPaymentModel(models.Model):
+    PAYMENT_TYPES = (
+        ("N", "Nağd"),
+        ("NS", "Nağdsız")
+    )
+    installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.SET_NULL, related_name="extra_payments", blank=True, null=True)
+    payment_date = models.DateTimeField("Ödəniş tarixi")
+    payment_amount = models.FloatField("Ödəniş miqdarı")
+    payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
+
+    def save(self, *args, **kwargs):
+        self.installment.save()
+        self.installment.installmentinfo.save()
+        return super(ExtraPaymentModel, self).save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.installment.installmentinfo.registration.client.name + " | " + self.installment.installment_date.month
     
 class FilterChangerModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=100)
@@ -233,7 +272,8 @@ class ChangeFilterModel(models.Model):
     CATEGORIES = (
         ("F", "Birinci kateqoriya"),
         ("S", "İkinci kateqoriya"),
-        ("T", "Üçüncü kateqoriya")
+        ("T", "Üçüncü kateqoriya"),
+        ("FT", "Dördüncü kateqoriya")
     )
     PAYMENT_STATUS = (
         ("O", "Ödənişli"),
@@ -241,7 +281,7 @@ class ChangeFilterModel(models.Model):
     )
     registration = models.ForeignKey(RegistrationModel, verbose_name="Qeydiyyat", on_delete=models.CASCADE, related_name="changefilters")
     change_count = models.IntegerField("Dəyişim sayı", default=0)
-    category = models.CharField("Kateqoriya", choices=CATEGORIES, max_length=1)
+    category = models.CharField("Kateqoriya", choices=CATEGORIES, max_length=2)
     period = models.FloatField("Period", editable=False)
     change_status = models.CharField("Dəyişim statusu", choices=CHANGE_STATUS, max_length=2)
     changers = models.ManyToManyField(FilterChangerModel, verbose_name="Filter Dəyişdirənlər", related_name="changer_changes", blank=True)
@@ -255,7 +295,7 @@ class ChangeFilterModel(models.Model):
         verbose_name_plural = "Filtir dəyişimləri"
 
     def save(self, *args, **kwargs):
-        if self.id:
+        if self.id and not ChangeFilterModel.objects.filter(registration=self.registration, change_count=self.change_count+1, category=self.category).exists():
             ChangeFilterModel.objects.create(
                 registration = self.registration,
                 change_count = self.change_count + 1,
