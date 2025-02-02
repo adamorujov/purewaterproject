@@ -105,7 +105,8 @@ class RegistrationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # --------- InstallmentInfo APIs -----------
 class InstallmentInfoListAPIView(ListAPIView):
-    queryset = InstallmentInfoModel.objects.all()
+    def get_queryset(self):
+        return InstallmentInfoModel.objects.filter(registration__status="A")
     serializer_class = InstallmentInfoSerializer
     permission_classes = (IsAdminUser,)
 
