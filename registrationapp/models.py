@@ -242,7 +242,7 @@ class ExtraPaymentModel(models.Model):
         ('OM', 'Ödənilməyib')
     )
     installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.SET_NULL, related_name="extra_payments", blank=True, null=True)
-    payment_date = models.DateTimeField("Ödəniş tarixi")
+    payment_date = models.DateField("Ödəniş tarixi")
     payment_amount = models.FloatField("Ödəniş miqdarı")
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
     status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
