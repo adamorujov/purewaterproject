@@ -3,7 +3,7 @@ from registrationapp.models import InstallmentModel, SellerModel, FilterChangerM
 
 class DailyPaymentModel(models.Model):
     installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.CASCADE, related_name="dailypayments")
-    month = models.IntegerField("Ödədiyi ay")
+    month = models.IntegerField("Ödədiyi ay", blank=True, null=True)
     date = models.DateField("Ödəniş tarixi")
 
     class Meta:

@@ -219,9 +219,9 @@ class InstallmentModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.debt_amount = self.installment_amount - self.payment_amount
-        # if ExtraPaymentModel.objects.filter(installment=self).exists():
-        #     sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
-        #     self.debt_amount -= sum_extra_payments
+        if self.id and ExtraPaymentModel.objects.filter(installment=self).exists():
+            sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
+            self.debt_amount -= sum_extra_payments
         return super(InstallmentModel, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
@@ -237,10 +237,16 @@ class ExtraPaymentModel(models.Model):
         ("N", "Nağd"),
         ("NS", "Nağdsız")
     )
+    STATUS = (
+        ('O', 'Ödənilib'),
+        ('OM', 'Ödənilməyib')
+    )
     installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.SET_NULL, related_name="extra_payments", blank=True, null=True)
     payment_date = models.DateTimeField("Ödəniş tarixi")
     payment_amount = models.FloatField("Ödəniş miqdarı")
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
+    status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
+    message_status = models.BooleanField("Mesaj statusu", default=False)
 
     def save(self, *args, **kwargs):
         self.installment.save()

@@ -253,7 +253,6 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         elif action == "payment":
             payment_data = {
                 "installment": instance.installment.id,
-                "month": request.data.get("month"),
                 "date": instance.payment_date
             }
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
