@@ -157,6 +157,7 @@ class InstallmentInfoModel(models.Model):
                     payment_amount = 0,
                     debt_amount = 0
                 )
+                remainder = 0
                 for i in range(self.installment_count):
                     month = month + 1
                     if month == 13:
@@ -166,7 +167,6 @@ class InstallmentInfoModel(models.Model):
                         day = 30
                     elif month == 2 and day > 28:
                         day = 28
-                    remainder = 0
                     if i < self.installment_count - 1:
                         InstallmentModel.objects.create(
                             installmentinfo = self,
@@ -180,7 +180,7 @@ class InstallmentInfoModel(models.Model):
                         InstallmentModel.objects.create(
                             installmentinfo = self,
                             installment_date = date(year, month, day),
-                            installment_amount = self.payment_amount / self.installment_count + remainder,
+                            installment_amount = round(self.payment_amount / self.installment_count + remainder, 2),
                             payment_amount = 0,
                             debt_amount = self.payment_amount / self.installment_count,
                         )
@@ -219,9 +219,9 @@ class InstallmentModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.debt_amount = self.installment_amount - self.payment_amount
-        if ExtraPaymentModel.objects.filter(installment=self).exists():
-            sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
-            self.debt_amount -= sum_extra_payments
+        # if ExtraPaymentModel.objects.filter(installment=self).exists():
+        #     sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
+        #     self.debt_amount -= sum_extra_payments
         return super(InstallmentModel, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):

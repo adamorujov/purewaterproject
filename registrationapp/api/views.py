@@ -104,6 +104,12 @@ class RegistrationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
 
 # --------- InstallmentInfo APIs -----------
+class InstallmentInfoListAPIView(ListAPIView):
+    queryset = InstallmentInfoModel.objects.all()
+    serializer_class = InstallmentInfoSerializer
+    permission_classes = (IsAdminUser,)
+
+
 class RegistrationInstallmentInfoRetrieveAPIView(RetrieveAPIView):
     def get_object(self):
         id = self.kwargs.get("id")
@@ -265,6 +271,7 @@ class ExtraPaymentDestroyAPIView(DestroyAPIView):
     queryset = ExtraPaymentModel.objects.all()
     serializer_class = ExtraPaymentSerializer
     permission_classes = (IsAdminUser,)
+    lookup_field = "id"
     
 # ---------- DailyPayment APIs ------------
 class DailyPaymentListAPIView(ListAPIView):
@@ -406,3 +413,4 @@ class ShuttleServiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ShuttleServiceCreateSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+

@@ -11,6 +11,7 @@ urlpatterns = [
     path('registration-list/', views.RegistrationListAPIView.as_view(), name="registration-list"),
     path('registration-create/', views.RegistrationCreateAPIView.as_view(), name="registration-create"),
     path('registration-retrieve-update-destroy/<int:id>/', views.RegistrationRetrieveUpdateDestroyAPIView.as_view(), name="registration-retrieve-update-destroy"),
+    path('installmentinfo-list/', views.InstallmentInfoListAPIView.as_view(), name="installmentinfo-list0"),
     path('registration-installmentinfo-retrieve/<int:id>/', views.RegistrationInstallmentInfoRetrieveAPIView.as_view(), name="registration-installmentinfo-retrieve"),
     path('installmentinfo-retrieve-update/<int:id>/', views.InstallmentInfoRetrieveUpdateAPIView.as_view(), name="installmentinfo-retrieve-update"),
     path('installmentinfo-installment-list/<int:id>/', views.InstallmentInfoInstallmentListAPIView.as_view(), name="installmentinfo-installment-list"),

@@ -36,7 +36,9 @@ class SellerSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_total_salary(self, obj):
-        return obj.salary + obj.premier * self.get_sold_count(obj) - obj.premier * self.get_rejected_count(obj) if obj.salary and obj.premier else 0
+        objsalary = obj.salary if obj.salary else 0
+        objpremier = obj.premier if obj.premier else 0
+        return objsalary + objpremier * self.get_sold_count(obj) - objpremier * self.get_rejected_count(obj)
 
     def get_sold_count(self, obj):
         return obj.seller_registrations.filter(status="A").filter(client__date__month=timezone.now().date().month).count()
