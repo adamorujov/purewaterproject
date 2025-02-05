@@ -20,7 +20,7 @@ from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from django.utils import timezone
 from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
-from num2words import num2words
+from registrationapp.api.corrected_num2words import corrected_num2words
 
 # ---------- Client APIs -------------
 class ClientCreateAPIView(CreateAPIView):
@@ -223,17 +223,18 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            next_payment = InstallmentModel.objects.filter(debt_amount__gt=0)[0]
+            next_payment = InstallmentModel.objects.filter(debt_amount=F('installment_amount'))[0]
 
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
-                "payment_amount_with_word": num2words(instance.payment_amount, lang="az").upper(),
+                "payment_amount_with_word": corrected_num2words(instance.payment_amount),
                 "installment_date": instance.installment_date,
                 "payment_date": instance.payment_date,
                 "overdue_amount": instance.debt_amount,
+                "overdue_date": instance.installment_date,
                 "remaining_amount": instance.installmentinfo.remaining_amount,
                 "next_payment_amount": next_payment.debt_amount,
                 "next_payment_date": next_payment.installment_date
@@ -297,17 +298,18 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            next_payment = InstallmentModel.objects.filter(debt_amount__gt=0)[0]
+            next_payment = InstallmentModel.objects.filter(debt_amount=F('installment_amount'))[0]
 
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
-                "payment_amount_with_word": num2words(instance.payment_amount, lang="az").upper(),
+                "payment_amount_with_word": corrected_num2words(instance.payment_amount),
                 "installment_date": instance.installment.installment_date,
                 "payment_date": instance.payment_date,
                 "overdue_amount": instance.installment.debt_amount,
+                "overdue_date": instance.installment.installment_date,
                 "remaining_amount": instance.installment.installmentinfo.remaining_amount,
                 "next_payment_amount": next_payment.debt_amount,
                 "next_payment_date": next_payment.installment_date
