@@ -21,7 +21,7 @@ class ClientModel(models.Model):
     district = models.ForeignKey(DistrictModel, verbose_name="Rayon", on_delete=models.SET_NULL, related_name='district_clients', blank=True, null=True)
     village = models.ForeignKey(VillageModel, verbose_name="Kənd", on_delete=models.SET_NULL, related_name="village_clients", blank=True, null=True)
     note = models.TextField("Qeyd", blank=True, null=True)
-    date = models.DateField("Satış tarixi", auto_now_add=True)
+    date = models.DateField("Satış tarixi", default=timezone.now)
 
     class Meta:
         ordering = ("-id",)
@@ -185,8 +185,9 @@ class InstallmentInfoModel(models.Model):
                             debt_amount = self.payment_amount / self.installment_count,
                         )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
+            extra_paid_amounts = [extra_payment.payment_amount for installment in self.installments.all() for extra_payment in installment.extra_payments.all()]
             overdue_amounts = [installment.debt_amount for installment in self.installments.filter(status="OM") if installment.installment_date < datetime.now().date()]
-            self.paid_amount = sum(paid_amounts)
+            self.paid_amount = sum(paid_amounts) + sum(extra_paid_amounts)
             self.remaining_amount = self.total_amount - self.paid_amount
             self.overdue_amount = sum(overdue_amounts)
         return super(InstallmentInfoModel, self).save(*args, **kwargs)
@@ -247,6 +248,10 @@ class ExtraPaymentModel(models.Model):
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
     status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
     message_status = models.BooleanField("Mesaj statusu", default=False)
+
+    class Meta:
+        verbose_name = "Əlavə ödəniş"
+        verbose_name_plural = "Əlavə ödənişlər"
 
     def save(self, *args, **kwargs):
         self.installment.save()
@@ -357,3 +362,16 @@ class ShuttleServiceModel(models.Model):
     def __str__(self):
         return self.service
     
+class CreditorModel(models.Model):
+    name = models.CharField("Ad, soyad", max_length=100)
+    phone_number1 = models.CharField("Telefon nömrəsi 1", max_length=20, blank=True, null=True)
+    phone_number2 = models.CharField("Telefon nömrəsi 2", max_length=20, blank=True, null=True)
+    salary = models.FloatField("Maaş", default=0)
+
+    class Meta:
+        ordering = ("-id",)
+        verbose_name = "Kreditor"
+        verbose_name_plural = "Kreditorlar"
+
+    def __str__(self):
+        return self.name

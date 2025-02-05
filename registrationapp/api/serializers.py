@@ -2,7 +2,7 @@ from rest_framework import serializers
 from registrationapp.models import (
     ClientModel, SellerModel, PaymentModel, RegistrationModel,
     InstallmentInfoModel, InstallmentModel, ChangeFilterModel, FilterChangerModel,
-    ServicerModel, ShuttleServiceModel, ExtraPaymentModel                        
+    ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel                        
 )
 from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from productapp.api.serializers import ProductSerializer, CitySerializer, DistrictSerializer, VillageSerializer, GiftSerializer
@@ -184,4 +184,10 @@ class PersonaDailyPaymentSerializer(serializers.ModelSerializer):
 class PersonaDailyPaymentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonaDailyPaymentModel
+        fields = "__all__"
+
+# for creditor 
+class CreditorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditorModel
         fields = "__all__"

@@ -11,7 +11,7 @@ urlpatterns = [
     path('registration-list/', views.RegistrationListAPIView.as_view(), name="registration-list"),
     path('registration-create/', views.RegistrationCreateAPIView.as_view(), name="registration-create"),
     path('registration-retrieve-update-destroy/<int:id>/', views.RegistrationRetrieveUpdateDestroyAPIView.as_view(), name="registration-retrieve-update-destroy"),
-    path('installmentinfo-list/', views.InstallmentInfoListAPIView.as_view(), name="installmentinfo-list0"),
+    path('installmentinfo-list/', views.InstallmentInfoListAPIView.as_view(), name="installmentinfo-list"),
     path('registration-installmentinfo-retrieve/<int:id>/', views.RegistrationInstallmentInfoRetrieveAPIView.as_view(), name="registration-installmentinfo-retrieve"),
     path('installmentinfo-retrieve-update/<int:id>/', views.InstallmentInfoRetrieveUpdateAPIView.as_view(), name="installmentinfo-retrieve-update"),
     path('installmentinfo-installment-list/<int:id>/', views.InstallmentInfoInstallmentListAPIView.as_view(), name="installmentinfo-installment-list"),
@@ -36,4 +36,6 @@ urlpatterns = [
     path('shuttle-service-list/', views.ShuttleServiceListAPIView.as_view(), name="shuttle-service-list"),
     path('shuttle-service-create/', views.ShuttleServiceCreateAPIView.as_view(), name="shuttle-service-create"),
     path('shuttle-service-retrieve-update-destroy/<int:id>/', views.ShuttleServiceRetrieveUpdateDestroyAPIView.as_view(), name="shuttle-service-retrieve-update-destroy"),
+    path('creditor-list-create/', views.CreditorListCreateAPIView.as_view(), name="creditor-list-create"),
+    path('creditor-retrieve-update-destroy/<int:id>/', views.CreditorRetrieveUpdateDestroyAPIView.as_view(), name="creditor-list-create"),
 ]

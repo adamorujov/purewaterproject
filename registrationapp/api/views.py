@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from registrationapp.models import (
     ClientModel, SellerModel, PaymentModel, RegistrationModel, InstallmentInfoModel, 
-    InstallmentModel, ChangeFilterModel, FilterChangerModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel
+    InstallmentModel, ChangeFilterModel, FilterChangerModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel
 )
 from registrationapp.api.serializers import (
     ClientCreateSerializer, PaymentCreateSerializer, SellerSerializer, SellerCreateSerializer, RegistrationSerializer, RegistrationCreateSerializer,
@@ -14,12 +14,13 @@ from registrationapp.api.serializers import (
     InstallmentSerializer, InstallmentUpdateSerializer, InstallmentDestroySerializer,
     DailyPaymentSerializer, DailyPaymentCreateSerializer, ChangeFilterSerializer, ChangeFilterUpdateSerializer, FilterChangerSerializer,
     ServicerSerializer, ShuttleServiceSerializer, ShuttleServiceCreateSerializer, 
-    ExtraPaymentSerializer, PersonaDailyPaymentSerializer, PersonaDailyPaymentCreateSerializer
+    ExtraPaymentSerializer, PersonaDailyPaymentSerializer, PersonaDailyPaymentCreateSerializer, CreditorSerializer
 )
 from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from django.utils import timezone
 from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
+from num2words import num2words
 
 # ---------- Client APIs -------------
 class ClientCreateAPIView(CreateAPIView):
@@ -69,8 +70,8 @@ class SellerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(payment_data, status=status.HTTP_200_OK)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"errors": "Invalid action specified!"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -195,8 +196,9 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 instance.save()
                 instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
-            return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "whatsapp":
+            phone_number = request.data.get("phone_number")
             client = instance.installmentinfo.registration.client
             message = "%s %s\n\n%s\n%s\n\nÖdəniş %0.2f azn\n\nÖdəniş tarixi %s\n\nQalıq %0.2f\n" % (
                 client.name, client.father_name, client.phone_number1, client.phone_number2, 
@@ -211,7 +213,32 @@ class InstallmentUpdateAPIView(UpdateAPIView):
 
             instance.message_status = True
             instance.save()
-            return Response({"phone_number": client.phone_number1, "message": message}, status=status.HTTP_200_OK)
+            if phone_number:
+                return Response({"phone_number": phone_number, "message": message}, status=status.HTTP_200_OK)
+            else:
+                return Response({"errors": "Kreditorun nömrəsi təyin edilməyib."}, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "check":
+            client = instance.installmentinfo.registration.client
+            client_address = ""
+            client_address += client.city.city_name + " ş. " if client.city else ""
+            client_address += client.district.district_name + " r. " if client.district else ""
+            client_address += client.village.village_name + " k. " if client.village else ""
+            next_payment = InstallmentModel.objects.filter(debt_amount__gt=0)[0]
+
+            check_data = {
+                "name": client.name.split(" ")[0],
+                "surname": client.name.split(" ")[1] or " ",
+                "address": client_address,
+                "payment_amount_with_digit": instance.payment_amount,
+                "payment_amount_with_word": num2words(instance.payment_amount, lang="az").upper(),
+                "installment_date": instance.installment_date,
+                "payment_date": instance.payment_date,
+                "overdue_amount": instance.debt_amount,
+                "remaining_amount": instance.installmentinfo.remaining_amount,
+                "next_payment_amount": next_payment.debt_amount,
+                "next_payment_date": next_payment.installment_date
+            }
+            return Response(check_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -262,8 +289,30 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 instance.status = "O"
                 instance.message_status = False
                 instance.save()
-                return Response(dp_serializer.data, status=status.HTTP_200_OK)
-            return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(payment_data, status=status.HTTP_200_OK)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "check":
+            client = instance.installment.installmentinfo.registration.client
+            client_address = ""
+            client_address += client.city.city_name + " ş. " if client.city else ""
+            client_address += client.district.district_name + " r. " if client.district else ""
+            client_address += client.village.village_name + " k. " if client.village else ""
+            next_payment = InstallmentModel.objects.filter(debt_amount__gt=0)[0]
+
+            check_data = {
+                "name": client.name.split(" ")[0],
+                "surname": client.name.split(" ")[1] or " ",
+                "address": client_address,
+                "payment_amount_with_digit": instance.payment_amount,
+                "payment_amount_with_word": num2words(instance.payment_amount, lang="az").upper(),
+                "installment_date": instance.installment.installment_date,
+                "payment_date": instance.payment_date,
+                "overdue_amount": instance.installment.debt_amount,
+                "remaining_amount": instance.installment.installmentinfo.remaining_amount,
+                "next_payment_amount": next_payment.debt_amount,
+                "next_payment_date": next_payment.installment_date
+            }
+            return Response(check_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -356,8 +405,8 @@ class FilterChangerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                return Response(dp_serializer.data, status=status.HTTP_200_OK)
-            return Response(dp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(payment_data, status=status.HTTP_200_OK)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -392,8 +441,8 @@ class ServicerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(payment_data, status=status.HTTP_200_OK)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -413,4 +462,42 @@ class ShuttleServiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ShuttleServiceCreateSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+
+# ------------ Creditor APIs ------------
+class CreditorListCreateAPIView(ListCreateAPIView):
+    queryset = CreditorModel.objects.all()
+    serializer_class = CreditorSerializer
+    permission_classes = (IsAdminUser,)
+
+class CreditorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = CreditorModel.objects.all()
+    serializer_class = CreditorSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = "id"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        action = request.data.get("action")
+
+        if action == "update":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "payment":
+            payment_data = {
+                "creditor": instance.id,
+                "month": request.data.get("month"),
+                "date": request.data.get("date")
+            }
+            dp_serializer = PersonaDailyPaymentCreateSerializer(data=payment_data)
+            if dp_serializer.is_valid():
+                dp_serializer.save()
+                return Response(payment_data, status=status.HTTP_200_OK)
+            return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"errors": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 
