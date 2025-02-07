@@ -228,6 +228,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
+                "father_name": client.father_name or " ",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
                 "payment_amount_with_word": corrected_num2words(instance.payment_amount),
@@ -288,7 +289,6 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             if dp_serializer.is_valid():
                 dp_serializer.save()
                 instance.status = "O"
-                instance.message_status = False
                 instance.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
@@ -303,6 +303,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
+                "father_name": client.father_name or " ",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
                 "payment_amount_with_word": corrected_num2words(instance.payment_amount),
@@ -352,14 +353,14 @@ class PersonaDailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIVi
 class OverduePaymentListAPIView(ListAPIView):
     def get_queryset(self):
         return InstallmentModel.objects.filter(
-            Q(installment_date__lt = timezone.now()) | Q(installment_date__lt = F("payment_date"))
-        ).annotate(
+            installment_date__lte = timezone.now()
+            ).annotate(
             status_order = Case(
                 When(status="O", then=1),
                 When(status="OM", then=0),
                 output_field=IntegerField()
             )
-        ).order_by('status_order').order_by("-id")
+        ).order_by('status_order', '-id')
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 
