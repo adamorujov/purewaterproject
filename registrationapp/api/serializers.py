@@ -171,11 +171,18 @@ class ShuttleServiceCreateSerializer(serializers.ModelSerializer):
         model = ShuttleServiceModel
         fields = "__all__"
 
+# for creditor 
+class CreditorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditorModel
+        fields = "__all__"
+
 # for personadailypayment list
 class PersonaDailyPaymentSerializer(serializers.ModelSerializer):
     seller = SellerSerializer()
     changer = FilterChangerSerializer()
     servicer = ServicerSerializer()
+    creditor = CreditorSerializer()
     class Meta:
         model = PersonaDailyPaymentModel
         fields = "__all__"
@@ -186,8 +193,3 @@ class PersonaDailyPaymentCreateSerializer(serializers.ModelSerializer):
         model = PersonaDailyPaymentModel
         fields = "__all__"
 
-# for creditor 
-class CreditorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CreditorModel
-        fields = "__all__"
