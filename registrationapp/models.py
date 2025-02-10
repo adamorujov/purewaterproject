@@ -29,7 +29,7 @@ class ClientModel(models.Model):
         verbose_name_plural = "Müştərilər"
     
     def __str__(self):
-        return self.name
+        return self.name + " " + self.father_name if self.father_name else self.name
     
 class PaymentModel(models.Model):
     discount_type = models.CharField("Endirimin tipi", max_length=100, blank=True, null=True)
@@ -125,11 +125,11 @@ class RegistrationModel(models.Model):
         return super(RegistrationModel, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.client.name
+        return self.client.name + " " + self.client.father_name if self.client.father_name else self.client.name
 
 class InstallmentInfoModel(models.Model):
     registration = models.OneToOneField(RegistrationModel, verbose_name="Qeydiyyat", on_delete=models.CASCADE, related_name="installmentinfo")
-    total_amount = models.FloatField("İlkin məbləğ")
+    total_amount = models.FloatField("Ümumi məbləğ")
     paid_amount = models.FloatField("Ödənilən məbləğ")
     remaining_amount = models.FloatField("Qalan məbləğ")
     overdue_amount = models.FloatField("Gecikən məbləğ")
@@ -137,7 +137,7 @@ class InstallmentInfoModel(models.Model):
 
     payment_amount = models.FloatField("Ödəniş miqdarı")
     installment_count = models.IntegerField("Taksit sayı")
-    start_date = models.DateField(default=timezone.now)
+    start_date = models.DateField("Başlanğıc tarix", default=timezone.now)
 
     class Meta:
         ordering = ("-id",)
@@ -193,7 +193,7 @@ class InstallmentInfoModel(models.Model):
         return super(InstallmentInfoModel, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.registration.client.name
+        return self.registration.client.name + " " + self.registration.client.father_name if self.registration.client.father_name else self.registration.client.name
 
 class InstallmentModel(models.Model):
     PAYMENT_TYPES = (
@@ -231,7 +231,7 @@ class InstallmentModel(models.Model):
         return super(InstallmentModel, self).delete(*args, **kwargs)
 
     def __str__(self):
-        return self.installmentinfo.registration.client.name
+        return self.installmentinfo.registration.client.name + " " + self.installmentinfo.registration.client.father_name if self.installmentinfo.registration.client.father_name else self.installmentinfo.registration.client.name
     
 class ExtraPaymentModel(models.Model):
     PAYMENT_TYPES = (
@@ -258,7 +258,7 @@ class ExtraPaymentModel(models.Model):
         return super(ExtraPaymentModel, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.installment.installmentinfo.registration.client.name + " | " + self.installment.installment_date.month
+        return self.installment.installmentinfo.registration.client.name + " " + self.installment.installmentinfo.registration.client.father_name if self.installment.installmentinfo.registration.client.father_name else self.installment.installmentinfo.registration.client.name
     
 class FilterChangerModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=100)
@@ -318,7 +318,7 @@ class ChangeFilterModel(models.Model):
         return super(ChangeFilterModel, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.registration.client.name + " / " + self.category
+        return self.registration.client.name + " " + self.registration.client.father_name if self.registration.client.father_name else self.registration
     
 class ServicerModel(models.Model):
     name = models.CharField("Ad, soyad", max_length=100)

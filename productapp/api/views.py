@@ -1,6 +1,6 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from productapp.models import CityModel, DistrictModel, VillageModel, ProductModel, GiftModel, DiscountModel
-from productapp.api.serializers import CitySerializer, DistrictSerializer, VillageSerializer, ProductSerializer, GiftSerializer, DiscountSerializer
+from productapp.models import CityModel, DistrictModel, VillageModel, ProductModel, GiftModel
+from productapp.api.serializers import CitySerializer, DistrictSerializer, VillageSerializer, ProductSerializer, GiftSerializer
 from rest_framework.permissions import IsAdminUser
 
 # ----------- City APIs -----------
@@ -91,18 +91,6 @@ class GiftListCreateAPIView(ListCreateAPIView):
 class GiftRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = GiftModel.objects.all()
     serializer_class = GiftSerializer
-    permission_classes = (IsAdminUser,)
-    lookup_field = "id"
-
-# --------------- Discount APIs --------------
-class DiscountListCreateAPIView(ListCreateAPIView):
-    queryset = DiscountModel.objects.all()
-    serializer_class = DiscountSerializer
-    permission_classes = (IsAdminUser,)
-
-class DiscountRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = DiscountModel.objects.all()
-    serializer_class = DiscountSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
 

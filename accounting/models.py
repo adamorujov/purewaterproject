@@ -3,7 +3,7 @@ from registrationapp.models import InstallmentModel, SellerModel, FilterChangerM
 
 class DailyPaymentModel(models.Model):
     installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.CASCADE, related_name="dailypayments")
-    month = models.IntegerField("Ödədiyi ay", blank=True, null=True)
+    month = models.IntegerField("Ödənilən ay", blank=True, null=True)
     date = models.DateField("Ödəniş tarixi")
 
     class Meta:
@@ -12,10 +12,7 @@ class DailyPaymentModel(models.Model):
         verbose_name_plural = "Günlük ödənişlər"
 
     def __str__(self):
-        try:
-            return self.installment.installmentinfo.registration.client.name + " | " + self.installment.installmentinfo.registration.client.client_product.name + " | " + str(self.date) + " | " + str(self.month)
-        except:
-            return "Silinmiş məlumat" + " | " + str(self.date) + " | " + str(self.month)
+        return str(self.id)
 
 class PersonaDailyPaymentModel(models.Model):
     seller = models.ForeignKey(SellerModel, verbose_name="Satıcı", on_delete=models.SET_NULL, related_name="seller_dailypayments", blank=True, null=True)

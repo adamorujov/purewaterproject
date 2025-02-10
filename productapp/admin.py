@@ -1,9 +1,19 @@
 from django.contrib import admin
-from productapp.models import ProductModel, DistrictModel, CityModel, VillageModel, GiftModel, DiscountModel
+from productapp.models import ProductModel, DistrictModel, CityModel, VillageModel, GiftModel
 
-admin.site.register(ProductModel)
-admin.site.register(DistrictModel)
+@admin.register(ProductModel)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'price')
+
+@admin.register(DistrictModel)
+class DistrictAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'city')
+    list_filter = ('city',)
+
+@admin.register(VillageModel)
+class VillageAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'district', 'city')
+    list_filter = ('district', 'city')
+
 admin.site.register(CityModel)
-admin.site.register(VillageModel)
 admin.site.register(GiftModel)
-admin.site.register(DiscountModel)

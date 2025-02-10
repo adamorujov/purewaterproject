@@ -16,6 +16,4 @@ urlpatterns = [
     path('product-retrieve-update-destroy/<int:id>/', views.ProductRetrieveUpdateDestroyAPIView.as_view(), name="product-retrieve-update-destroy"),
     path('gift-list-create/', views.GiftListCreateAPIView.as_view(), name="gift-list-create"),
     path('gift-retrieve-update-destroy/<int:id>/', views.GiftRetrieveUpdateDestroyAPIView.as_view(), name="product-retrieve-update-destroy"),
-    path('discount-list-create/', views.DiscountListCreateAPIView.as_view(), name="discount-list-create"),
-    path('discount-retrieve-update-destroy/<int:id>/', views.DiscountRetrieveUpdateDestroyAPIView.as_view(), name="discount-retrieve-update-destroy"),
 ]

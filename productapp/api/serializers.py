@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from productapp.models import (CityModel, DistrictModel, VillageModel, ProductModel, GiftModel, DiscountModel)
+from productapp.models import (CityModel, DistrictModel, VillageModel, ProductModel, GiftModel)
 
 class CitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,9 +24,4 @@ class ProductSerializer(serializers.ModelSerializer):
 class GiftSerializer(serializers.ModelSerializer):
     class Meta:
         model = GiftModel
-        fields = "__all__"
-
-class DiscountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DiscountModel
         fields = "__all__"

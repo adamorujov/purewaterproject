@@ -144,6 +144,9 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 instance.registration.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "delete":
+            instance.installments.all().delete()
+            return Response({"success": "Taksitlər silindi."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified"}, status=status.HTTP_400_BAD_REQUEST)
             

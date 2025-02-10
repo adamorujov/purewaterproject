@@ -59,16 +59,3 @@ class GiftModel(models.Model):
     def __str__(self):
         return self.name
 
-class DiscountModel(models.Model):
-    client = models.ForeignKey('registrationapp.ClientModel', verbose_name="Satış", on_delete=models.CASCADE, related_name='discounts')
-    discount_type = models.TextField("Endirimin tipi", blank=True, null=True)
-    percentage = models.FloatField("Endirim %", blank=True, null=True)
-    amount = models.FloatField("Endirimin miqdarı", blank=True, null=True)
-
-    class Meta:
-        ordering = ("-id",)
-        verbose_name = "Endirim"
-        verbose_name_plural = "Endirimlər"
-
-    def __str__(self):
-        return self.discount_type

@@ -7,8 +7,8 @@ class UserMoreInfoModel(models.Model):
 
     class Meta:
         ordering = ("-id",)
-        verbose_name = "İstifadəçi məlumatları"
-        verbose_name_plural = "İstifadəçilərin məlumatları"
+        verbose_name = "İstifadəçi profil şəkli"
+        verbose_name_plural = "İstifadəçilərin profil şəkilləri"
 
     def __str__(self):
         return self.user.username
