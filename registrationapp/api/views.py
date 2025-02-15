@@ -226,7 +226,10 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            next_payment = InstallmentModel.objects.filter(debt_amount=F('installment_amount'))[0]
+            # next_payment = InstallmentModel.objects.filter(installmentinfo=instance.installmentinfo, debt_amount=F('installment_amount'))[0]
+            next_payment = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))[0]
+            print(instance.installmentinfo.installments.filter(debt_amount=F('installment_amount')))
+            print(next_payment)
 
             check_data = {
                 "name": client.name.split(" ")[0],
