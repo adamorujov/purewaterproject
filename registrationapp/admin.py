@@ -69,4 +69,7 @@ class ShuttleServiceAdmin(admin.ModelAdmin):
     get_registration_client.short_description = "Müştəri"
 
 admin.site.register(CreditorModel)
-admin.site.unregister(Group)    
+admin.site.unregister(Group)   
+
+admin.site.site_title = "Pure Water Administrasiyası"
+admin.site.site_header = "Pure Water Administrasiyası"

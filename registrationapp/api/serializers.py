@@ -27,24 +27,9 @@ class ClientCreateSerializer(serializers.ModelSerializer):
 
 # for seller list
 class SellerSerializer(serializers.ModelSerializer):
-    total_salary = serializers.SerializerMethodField()
-    sold_count = serializers.SerializerMethodField()
-    rejected_count = serializers.SerializerMethodField()
-
     class Meta:
         model = SellerModel
         fields = "__all__"
-
-    def get_total_salary(self, obj):
-        objsalary = obj.salary if obj.salary else 0
-        objpremier = obj.premier if obj.premier else 0
-        return objsalary + objpremier * self.get_sold_count(obj) - objpremier * self.get_rejected_count(obj)
-
-    def get_sold_count(self, obj):
-        return obj.seller_registrations.filter(status="A").filter(client__date__month=timezone.now().date().month).count()
-    
-    def get_rejected_count(self, obj):
-        return obj.seller_registrations.filter(status="IO").filter(client__date__month=timezone.now().date().month).count()
 
 # for seller create, update, destroy
 class SellerCreateSerializer(serializers.ModelSerializer):

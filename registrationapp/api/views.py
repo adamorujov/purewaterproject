@@ -17,6 +17,7 @@ from registrationapp.api.serializers import (
     ExtraPaymentSerializer, PersonaDailyPaymentSerializer, PersonaDailyPaymentCreateSerializer, CreditorSerializer
 )
 from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
+from datetime import date
 from django.utils import timezone
 from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
@@ -44,6 +45,59 @@ class SellerCreateAPIView(CreateAPIView):
     queryset = SellerModel.objects.all()
     serializer_class = SellerCreateSerializer
     permission_classes = (IsAdminUser,)
+
+class SellerDataRetrieveAPIView(RetrieveAPIView):
+    queryset = SellerModel.objects.all()
+    serializer_class = SellerSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = "id"
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        start_date = request.query_params.get('start_date', None).split("-")
+        end_date = request.query_params.get('end_date', None).split("-")
+
+        start_date = date(int(start_date[0]), int(start_date[1]), int(start_date[2]))
+        end_date = date(int(end_date[0]), int(end_date[1]), int(end_date[2]))
+
+        if start_date <= end_date:
+            all_registrations = instance.seller_registrations.all()
+            result_data = []
+            m_count = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month
+            all_months = []
+            x, y= start_date.month, start_date.year
+            for m in range(m_count + 1):
+                all_months.append([x, y])
+                if x < 12:
+                    x += 1
+                else:
+                    x = 1
+                    y += 1
+            
+            for d in all_months:
+                e = []
+                e.append(d)
+                l, t, z = [], [], []
+                for reg in all_registrations:
+                    if reg.refusal_date and reg.refusal_date.year == d[1] and reg.refusal_date.month == d[0]:
+                        t.append(reg.client.name)
+                    if reg.end_date and reg.end_date.year == d[1] and reg.end_date.month == d[0]:
+                        z.append(reg.client.name)
+                    if (reg.client.date.year < d[1] or (reg.client.date.year == d[1] and reg.client.date.month <= d[0])) and (not reg.refusal_date or reg.refusal_date.year > d[1] or (reg.refusal_date.year == d[1] and reg.refusal_date.month > d[0])) and (not reg.end_date or reg.end_date.year > d[1] or (reg.end_date.year == d[1] and reg.end_date.month > d[0])):
+                        l.append(reg.client.name)
+                    
+                e.append(l)
+                e.append(t)
+                e.append(z)
+                e.append([len(l), len(t), len(z)])
+                result_data.append(e)
+
+            response_data = {
+                "result_data": result_data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response({"errors": "Başlanğıc tarix son tarixdən böyükdür."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SellerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = SellerModel.objects.all()
@@ -141,6 +195,7 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             if serializer.is_valid():
                 serializer.save()
                 instance.registration.status = "IO"
+                instance.registration.refusal_date = timezone.now().date
                 instance.registration.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -358,15 +413,13 @@ class PersonaDailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIVi
 # ---------- OverduePayment APIs ------------
 class OverduePaymentListAPIView(ListAPIView):
     def get_queryset(self):
-        return InstallmentModel.objects.filter(
-            installment_date__lte = timezone.now()
-            ).annotate(
-            status_order = Case(
-                When(status="O", then=1),
-                When(status="OM", then=0),
-                output_field=IntegerField()
-            )
-        ).order_by('status_order', '-id')
+        return InstallmentModel.objects.filter(debt_amount__gt=0, installment_date__lte = timezone.now())
+    serializer_class = InstallmentSerializer
+    permission_classes = (IsAdminUser,)
+
+class AllPaymentListAPIView(ListAPIView):
+    def get_queryset(self):
+        return InstallmentModel.objects.order_by("installment_date")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 

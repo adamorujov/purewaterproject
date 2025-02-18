@@ -74,6 +74,8 @@ class RegistrationModel(models.Model):
     payment = models.OneToOneField(PaymentModel, verbose_name="Ödəniş", on_delete=models.CASCADE, related_name="payment_registration")
     sellers = models.ManyToManyField(SellerModel, verbose_name="Satıcılar", related_name="seller_registrations")
     status = models.CharField("Status", choices=STATUS, max_length=2, default="A")
+    refusal_date = models.DateField("İmtina tarixi", blank=True, null=True)
+    end_date = models.DateField("Ödəniş tamamlanma tarixi", blank=True, null=True)
 
     class Meta:
         ordering = ("-id",)
