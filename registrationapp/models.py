@@ -1,9 +1,8 @@
 from django.db import models
 from productapp.models import ProductModel, CityModel, VillageModel, GiftModel, DistrictModel
 from django.utils import timezone
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
-from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from registrationapp.get_date import get_date
 
@@ -157,7 +156,7 @@ class InstallmentInfoModel(models.Model):
                     installment_date = date(year, month, day),
                     installment_amount = self.total_amount - self.payment_amount,
                     payment_amount = 0,
-                    debt_amount = 0
+                    debt_amount = self.total_amount - self.payment_amount
                 )
                 remainder = 0
                 for i in range(self.installment_count):
@@ -175,7 +174,7 @@ class InstallmentInfoModel(models.Model):
                             installment_date = date(year, month, day),
                             installment_amount = round(self.payment_amount / self.installment_count),
                             payment_amount = 0,
-                            debt_amount = self.payment_amount / self.installment_count,
+                            debt_amount = round(self.payment_amount / self.installment_count),
                         )
                         remainder += self.payment_amount / self.installment_count - round(self.payment_amount / self.installment_count)
                     else:
@@ -184,10 +183,10 @@ class InstallmentInfoModel(models.Model):
                             installment_date = date(year, month, day),
                             installment_amount = round(self.payment_amount / self.installment_count + remainder, 2),
                             payment_amount = 0,
-                            debt_amount = self.payment_amount / self.installment_count,
+                            debt_amount = round(self.payment_amount / self.installment_count + remainder, 2),
                         )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
-            extra_paid_amounts = [extra_payment.payment_amount for installment in self.installments.all() for extra_payment in installment.extra_payments.all()]
+            extra_paid_amounts = [extra_payment.payment_amount for extra_payment in self.extrapayments.all()]
             overdue_amounts = [installment.debt_amount for installment in self.installments.filter(status="OM") if installment.installment_date < datetime.now().date()]
             self.paid_amount = sum(paid_amounts) + sum(extra_paid_amounts)
             self.remaining_amount = self.total_amount - self.paid_amount
@@ -219,13 +218,6 @@ class InstallmentModel(models.Model):
     class Meta:
         verbose_name = "Taksit"
         verbose_name_plural = "Taksitlər"
-
-    def save(self, *args, **kwargs):
-        self.debt_amount = self.installment_amount - self.payment_amount
-        if self.id and ExtraPaymentModel.objects.filter(installment=self).exists():
-            sum_extra_payments = sum([extra_payment.payment_amount for extra_payment in self.extra_payments.all()])
-            self.debt_amount -= sum_extra_payments
-        return super(InstallmentModel, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
         self.installmentinfo.installment_count -= 1
@@ -244,7 +236,7 @@ class ExtraPaymentModel(models.Model):
         ('O', 'Ödənilib'),
         ('OM', 'Ödənilməyib')
     )
-    installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.SET_NULL, related_name="extra_payments", blank=True, null=True)
+    installmentinfo = models.ForeignKey(InstallmentInfoModel, verbose_name="Taksit məlumatı", on_delete=models.CASCADE, related_name="extrapayments", blank=True, null=True)
     payment_date = models.DateField("Ödəniş tarixi")
     payment_amount = models.FloatField("Ödəniş miqdarı")
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
@@ -253,14 +245,11 @@ class ExtraPaymentModel(models.Model):
     class Meta:
         verbose_name = "Əlavə ödəniş"
         verbose_name_plural = "Əlavə ödənişlər"
-
-    def save(self, *args, **kwargs):
-        self.installment.save()
-        self.installment.installmentinfo.save()
-        return super(ExtraPaymentModel, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.installment.installmentinfo.registration.client.name + " " + self.installment.installmentinfo.registration.client.father_name if self.installment.installmentinfo.registration.client.father_name else self.installment.installmentinfo.registration.client.name
+        if self.installmentinfo:
+            return self.installmentinfo.registration.client.name + " " + self.installmentinfo.registration.client.father_name if self.installmentinfo.registration.client.father_name else self.installmentinfo.registration.client.name
+        return str(self.id)
     
 class FilterChangerModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=100)
