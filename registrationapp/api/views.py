@@ -325,7 +325,7 @@ class InstallmentInfoExtraPaymentListAPIView(ListAPIView):
     def get_queryset(self):
         id = self.kwargs.get("id")
         installmentinfo = get_object_or_404(InstallmentInfoModel, registration__id=id)
-        return ExtraPaymentModel.objects.filter(installment__installmentinfo=installmentinfo)
+        return ExtraPaymentModel.objects.filter(installmentinfo=installmentinfo)
     serializer_class = ExtraPaymentSerializer
     permission_classes = (IsAdminUser,)
 
