@@ -249,10 +249,18 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                instance.debt_amount = instance.debt_amount - instance.payment_amount
-                instance.status = "O"
-                instance.message_status = False
-                instance.save()
+                debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
+                x = instance.payment_amount
+                for debt in debt_payments:
+                    print(debt.installment_date)
+                    y = debt.debt_amount
+                    debt.debt_amount = y - x if x < y else 0
+                    x -= y
+                    debt.status = "O"
+                    debt.message_status = False
+                    debt.save()
+                    if x <= 0:
+                        break
                 instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)

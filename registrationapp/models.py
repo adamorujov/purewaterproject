@@ -187,7 +187,7 @@ class InstallmentInfoModel(models.Model):
                         )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
             extra_paid_amounts = [extra_payment.payment_amount for extra_payment in self.extrapayments.all()]
-            overdue_amounts = [installment.debt_amount for installment in self.installments.filter(status="OM") if installment.installment_date < datetime.now().date()]
+            overdue_amounts = [installment.debt_amount for installment in self.installments.all() if installment.installment_date <= datetime.now().date()]
             self.paid_amount = sum(paid_amounts) + sum(extra_paid_amounts)
             self.remaining_amount = self.total_amount - self.paid_amount
             self.overdue_amount = sum(overdue_amounts)
