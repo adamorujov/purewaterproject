@@ -373,13 +373,12 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
-            client = instance.installment.installmentinfo.registration.client
+            client = instance.installmentinfo.registration.client
             client_address = ""
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            next_payment = InstallmentModel.objects.filter(debt_amount=F('installment_amount'))[0]
-
+            next_payment = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))[0]
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
@@ -387,11 +386,9 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
                 "payment_amount_with_word": corrected_num2words(instance.payment_amount),
-                "installment_date": instance.installment.installment_date,
                 "payment_date": instance.payment_date,
-                "overdue_amount": instance.installment.debt_amount,
-                "overdue_date": instance.installment.installment_date,
-                "remaining_amount": instance.installment.installmentinfo.remaining_amount,
+                "overdue_amount": instance.installmentinfo.overdue_amount,
+                "remaining_amount": instance.installmentinfo.remaining_amount,
                 "next_payment_amount": next_payment.debt_amount,
                 "next_payment_date": next_payment.installment_date
             }
