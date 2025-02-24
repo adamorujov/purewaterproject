@@ -370,6 +370,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                         break
                 instance.status = "O"
                 instance.save()
+                instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
