@@ -218,6 +218,7 @@ class InstallmentModel(models.Model):
     class Meta:
         verbose_name = "Taksit"
         verbose_name_plural = "Taksitlər"
+        ordering = ("id",)
     
     def delete(self, *args, **kwargs):
         self.installmentinfo.installment_count -= 1

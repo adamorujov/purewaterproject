@@ -24,6 +24,7 @@ class RegistrationAdmin(admin.ModelAdmin):
 @admin.register(InstallmentInfoModel)
 class InstallmentInfoAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'total_amount', 'paid_amount', 'remaining_amount', 'overdue_amount', 'refund_amount', 'get_down_payment_amount', 'installment_count', 'start_date')
+    ordering = ("-id",)
 
     def get_down_payment_amount(self, obj):
         return obj.total_amount - obj.payment_amount
