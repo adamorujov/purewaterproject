@@ -45,7 +45,9 @@ class DistrictCityRetrieveAPIView(RetrieveAPIView):
 
 # ------------- Village APIs -------------
 class VillageListCreateAPIView(ListCreateAPIView):
-    queryset = VillageModel.objects.all()
+    # queryset = VillageModel.objects.all()
+    def get_queryset(self):
+        return sorted(VillageModel.objects.all(), key=lambda obj: obj.village_name)
     serializer_class = VillageSerializer
     permission_classes = (IsAdminUser,)
 
