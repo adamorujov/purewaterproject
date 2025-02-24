@@ -2,7 +2,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIV
 from productapp.models import CityModel, DistrictModel, VillageModel, ProductModel, GiftModel
 from productapp.api.serializers import CitySerializer, DistrictSerializer, VillageSerializer, ProductSerializer, GiftSerializer
 from rest_framework.permissions import IsAdminUser
-from az_sort_key import az_sort_key
+from productapp.api.az_sort_key import az_sort_key
 
 # ----------- City APIs -----------
 class CityListCreateAPIView(ListCreateAPIView):
