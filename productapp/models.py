@@ -24,7 +24,7 @@ class DistrictModel(models.Model):
         return self.district_name
 
 class VillageModel(models.Model):
-    village_name = models.CharField("Kənd", max_length=100, db_collation='utf8_general_cs')
+    village_name = models.CharField("Kənd", max_length=100, db_collation='utf8_unicode_cs')
     district = models.ForeignKey(DistrictModel, verbose_name="Rayon", on_delete=models.CASCADE, related_name="district_villages", blank=True, null=True)
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="city_villages", blank=True, null=True)
 
