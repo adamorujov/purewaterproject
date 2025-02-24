@@ -4,7 +4,7 @@ class CityModel(models.Model):
     city_name = models.CharField("Şəhər", max_length=30)
 
     class Meta:
-        ordering = ("-id",)
+        ordering = ("city_name",)
         verbose_name = "Şəhər"
         verbose_name_plural = "Şəhərlər"
 
@@ -16,7 +16,7 @@ class DistrictModel(models.Model):
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="districts", blank=True, null=True)
 
     class Meta:
-        ordering = ("-id",)
+        ordering = ("district_name",)
         verbose_name = "Rayon"
         verbose_name_plural = "Rayonlar"
 
@@ -29,7 +29,7 @@ class VillageModel(models.Model):
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="city_villages", blank=True, null=True)
 
     class Meta:
-        ordering = ("-id",)
+        ordering = ("village_name",)
         verbose_name = "Kənd"
         verbose_name_plural = "Kəndlər"
 

@@ -258,6 +258,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                     x -= y
                     debt.status = "O"
                     debt.message_status = False
+                    debt.payment_type = instance.payment_type
                     debt.save()
                     if x <= 0:
                         break
@@ -365,6 +366,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                     debt.debt_amount = y - x if x < y else 0
                     x -= y
                     debt.status = "O"
+                    debt.payment_type = instance.payment_type
                     debt.save()
                     if x <= 0:
                         break
