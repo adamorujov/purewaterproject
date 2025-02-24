@@ -106,7 +106,7 @@ class ExtraPaymentSerializer(serializers.ModelSerializer):
 # for dailypayment list
 class DailyPaymentSerializer(serializers.ModelSerializer):
     installment = InstallmentSerializer()
-    installmentinfo = InstallmentInfoSerializer()
+    extrapayment = ExtraPaymentSerializer()
     class Meta:
         model = DailyPaymentModel
         fields = "__all__"

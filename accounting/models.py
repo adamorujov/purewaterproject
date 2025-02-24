@@ -1,9 +1,9 @@
 from django.db import models
-from registrationapp.models import InstallmentModel, InstallmentInfoModel, SellerModel, FilterChangerModel, ServicerModel, CreditorModel
+from registrationapp.models import InstallmentModel, ExtraPaymentModel, SellerModel, FilterChangerModel, ServicerModel, CreditorModel
 
 class DailyPaymentModel(models.Model):
     installment = models.ForeignKey(InstallmentModel, verbose_name="Taksit", on_delete=models.CASCADE, related_name="installment_dailypayments", blank=True, null=True)
-    installmentinfo = models.ForeignKey(InstallmentInfoModel, verbose_name="Taksit məlumatı", on_delete=models.CASCADE, related_name="installmentinfo_dailypayments", blank=True, null=True)
+    extrapayment = models.ForeignKey(ExtraPaymentModel, verbose_name="Əlavə ödəniş", on_delete=models.CASCADE, related_name="extrapayment_dailypayments", blank=True, null=True)
     month = models.IntegerField("Ödənilən ay", blank=True, null=True)
     date = models.DateField("Ödəniş tarixi")
 

@@ -76,7 +76,6 @@ class SellerDataRetrieveAPIView(RetrieveAPIView):
             
             for d in all_months:
                 e = []
-                e.append(d)
                 l, t, z = [], [], []
                 for reg in all_registrations:
                     if reg.refusal_date and reg.refusal_date.year == d[1] and reg.refusal_date.month == d[0]:
@@ -85,12 +84,14 @@ class SellerDataRetrieveAPIView(RetrieveAPIView):
                         z.append(reg.client.name)
                     if (reg.client.date.year < d[1] or (reg.client.date.year == d[1] and reg.client.date.month <= d[0])) and (not reg.refusal_date or reg.refusal_date.year > d[1] or (reg.refusal_date.year == d[1] and reg.refusal_date.month > d[0])) and (not reg.end_date or reg.end_date.year > d[1] or (reg.end_date.year == d[1] and reg.end_date.month > d[0])):
                         l.append(reg.client.name)
-                    
-                e.append(l)
-                e.append(t)
-                e.append(z)
-                e.append([len(l), len(t), len(z)])
-                result_data.append(e)
+
+                if l or t or z:
+                    e.append(d)
+                    e.append(l)
+                    e.append(t)
+                    e.append(z)
+                    e.append([len(l), len(t), len(z)])
+                    result_data.append(e)
 
             response_data = {
                 "result_data": result_data
@@ -353,7 +354,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif action == "payment":
             payment_data = {
-                "installmentinfo": instance.installmentinfo.id,
+                "extrapayment": instance.id,
                 "date": instance.payment_date
             }
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
