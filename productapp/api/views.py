@@ -2,10 +2,12 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIV
 from productapp.models import CityModel, DistrictModel, VillageModel, ProductModel, GiftModel
 from productapp.api.serializers import CitySerializer, DistrictSerializer, VillageSerializer, ProductSerializer, GiftSerializer
 from rest_framework.permissions import IsAdminUser
+from az_sort_key import az_sort_key
 
 # ----------- City APIs -----------
 class CityListCreateAPIView(ListCreateAPIView):
-    queryset = CityModel.objects.all()
+    def get_queryset(self):
+        return sorted(CityModel.objects.all(), key=lambda obj: az_sort_key(obj.city_name))
     serializer_class = CitySerializer
     permission_classes = (IsAdminUser,)
 
@@ -17,7 +19,8 @@ class CityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 # ----------- District APIs -------------
 class DistrictListCreateAPIView(ListCreateAPIView):
-    queryset = DistrictModel.objects.all()
+    def get_queryset(self):
+        return sorted(DistrictModel.objects.all(), key=lambda obj: az_sort_key(obj.district_name))
     serializer_class = DistrictSerializer
     permission_classes = (IsAdminUser,)
 
@@ -45,15 +48,7 @@ class DistrictCityRetrieveAPIView(RetrieveAPIView):
 
 # ------------- Village APIs -------------
 class VillageListCreateAPIView(ListCreateAPIView):
-    # queryset = VillageModel.objects.all()
     def get_queryset(self):
-        def az_sort_key(word):
-            # Define Azerbaijani alphabet order
-            az_alphabet = "a,b,c,ç,d,e,f,g,ğ,h,ı,i,j,k,l,m,n,o,ö,p,r,s,ş,t,u,ü,v,y,z"
-            az_order = {letter: idx for idx, letter in enumerate(az_alphabet.split(','))}
-            
-            # Return a tuple with the index of each character in the word for comparison
-            return [az_order.get(c, len(az_alphabet)) for c in word.lower()]  # For case-insensitivity
         return sorted(VillageModel.objects.all(), key=lambda obj: az_sort_key(obj.village_name))
     serializer_class = VillageSerializer
     permission_classes = (IsAdminUser,)
