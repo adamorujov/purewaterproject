@@ -1,7 +1,7 @@
 from django.db import models
 
 class CityModel(models.Model):
-    city_name = models.CharField("Şəhər", max_length=30)
+    city_name = models.CharField("Şəhər", max_length=30, db_collation='utf8_unicode_ci')
 
     class Meta:
         ordering = ("city_name",)
@@ -12,7 +12,7 @@ class CityModel(models.Model):
         return self.city_name
 
 class DistrictModel(models.Model):
-    district_name = models.CharField("Rayon", max_length=30)
+    district_name = models.CharField("Rayon", max_length=30, db_collation='utf8_unicode_ci')
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="districts", blank=True, null=True)
 
     class Meta:
@@ -24,7 +24,7 @@ class DistrictModel(models.Model):
         return self.district_name
 
 class VillageModel(models.Model):
-    village_name = models.CharField("Kənd", max_length=100)
+    village_name = models.CharField("Kənd", max_length=100, db_collation='utf8_unicode_ci')
     district = models.ForeignKey(DistrictModel, verbose_name="Rayon", on_delete=models.CASCADE, related_name="district_villages", blank=True, null=True)
     city = models.ForeignKey(CityModel, verbose_name="Şəhər", on_delete=models.CASCADE, related_name="city_villages", blank=True, null=True)
 
