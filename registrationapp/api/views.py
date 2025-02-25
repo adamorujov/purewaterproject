@@ -237,6 +237,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
         if action == 'update':
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
+                instance.status = "OM"
                 serializer.save()
                 instance.installmentinfo.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -267,7 +268,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
                     instance.installmentinfo.registration.end_date = timezone.now().date
-                    instance.installmentinfo.save()
+                    instance.installmentinfo.registration.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "whatsapp":
@@ -378,6 +379,10 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 instance.status = "O"
                 instance.save()
                 instance.installmentinfo.save()
+                if instance.installmentinfo.remaining_amount == 0:
+                    instance.installmentinfo.registration.status = "OT"
+                    instance.installmentinfo.registration.end_date = timezone.now().date
+                    instance.installmentinfo.registration.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
