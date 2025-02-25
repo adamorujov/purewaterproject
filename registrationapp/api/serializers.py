@@ -98,6 +98,12 @@ class InstallmentDestroySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 # for extrapayment list
+class ExtraPaymentListSerializer(serializers.ModelSerializer):
+    installmentinfo = InstallmentInfoSerializer()
+    class Meta:
+        model = ExtraPaymentModel
+        fields = "__all__"
+
 class ExtraPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtraPaymentModel
