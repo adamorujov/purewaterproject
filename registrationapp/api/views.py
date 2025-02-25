@@ -281,9 +281,9 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 client.name, client.father_name, client.phone_number1,
                 instance.payment_amount, instance.payment_date, instance.installmentinfo.remaining_amount
             )
-            message += client.city.city_name + " ş. " if client.city else ""
-            message += client.district.district_name + " r. " if client.district else ""
-            message += client.village.village_name + " k. " if client.village else ""
+            message += client.city.city_name + " " if client.city else ""
+            message += client.district.district_name + " " if client.district else ""
+            message += client.village.village_name + " " if client.village else ""
 
             instance.message_status = True
             instance.save()
@@ -294,9 +294,9 @@ class InstallmentUpdateAPIView(UpdateAPIView):
         elif action == "check":
             client = instance.installmentinfo.registration.client
             client_address = ""
-            client_address += client.city.city_name + " ş. " if client.city else ""
-            client_address += client.district.district_name + " r. " if client.district else ""
-            client_address += client.village.village_name + " k. " if client.village else ""
+            client_address += client.city.city_name + " " if client.city else ""
+            client_address += client.district.district_name + " " if client.district else ""
+            client_address += client.village.village_name + " " if client.village else ""
             next_payments = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))
             if next_payments:
                 next_payment_amount = next_payments[0].debt_amount
@@ -391,9 +391,9 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         elif action == "check":
             client = instance.installmentinfo.registration.client
             client_address = ""
-            client_address += client.city.city_name + " ş. " if client.city else ""
-            client_address += client.district.district_name + " r. " if client.district else ""
-            client_address += client.village.village_name + " k. " if client.village else ""
+            client_address += client.city.city_name + " " if client.city else ""
+            client_address += client.district.district_name + " " if client.district else ""
+            client_address += client.village.village_name + " " if client.village else ""
             next_payments = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))
             if next_payments:
                 next_payment_amount = next_payments[0].debt_amount
@@ -451,13 +451,13 @@ class PersonaDailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIVi
 # ---------- OverduePayment APIs ------------
 class OverduePaymentListAPIView(ListAPIView):
     def get_queryset(self):
-        return InstallmentModel.objects.filter(debt_amount__gt=0, installment_date__lte = timezone.now())
+        return InstallmentModel.objects.filter(debt_amount__gt=0, installment_date__lte = timezone.now()).order_by("-id")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 
 class AllPaymentListAPIView(ListAPIView):
     def get_queryset(self):
-        return InstallmentModel.objects.order_by("installment_date")
+        return InstallmentModel.objects.filter(installmentinfo__registration__status="A").order_by("installment_date")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 
