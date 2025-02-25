@@ -196,7 +196,7 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             if serializer.is_valid():
                 serializer.save()
                 instance.registration.status = "IO"
-                instance.registration.refusal_date = timezone.now().date
+                instance.registration.refusal_date = timezone.now().date()
                 instance.registration.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -267,7 +267,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
-                    instance.installmentinfo.registration.end_date = timezone.now().date
+                    instance.installmentinfo.registration.end_date = timezone.now().date()
                     instance.installmentinfo.registration.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
@@ -381,7 +381,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
-                    instance.installmentinfo.registration.end_date = timezone.now().date
+                    instance.installmentinfo.registration.end_date = timezone.now().date()
                     instance.installmentinfo.registration.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
