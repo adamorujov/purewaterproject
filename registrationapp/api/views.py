@@ -263,6 +263,9 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                     debt.save()
                     if x <= 0:
                         break
+                if instance.installmentinfo.remaining_amount == 0:
+                    instance.installmentinfo.registration.status = "OT"
+                    instance.installmentinfo.registration.end_date = timezone.now().date
                 instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
@@ -449,6 +452,13 @@ class ChangeFilterListAPIView(ListAPIView):
     serializer_class = ChangeFilterSerializer
     permission_classes = (IsAdminUser,)
     lookup_field = "id"
+
+class RegistrationChangeFilterListAPIView(ListAPIView):
+    def get_queryset(self):
+        id = self.kwargs.get("id")
+        return ChangeFilterModel.objects.filter(registration__id=id)
+    serializer_class = ChangeFilterSerializer
+    permission_classes = (IsAdminUser,)
 
 class ChangeFilterRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = ChangeFilterModel.objects.all()

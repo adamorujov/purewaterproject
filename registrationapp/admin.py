@@ -2,7 +2,6 @@ from django.contrib import admin
 from registrationapp.models import (ClientModel, PaymentModel, SellerModel, RegistrationModel, InstallmentInfoModel, InstallmentModel,
 FilterChangerModel, ChangeFilterModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel
 )
-from django.contrib.auth.models import Group
 
 
 @admin.register(ClientModel)
@@ -70,7 +69,3 @@ class ShuttleServiceAdmin(admin.ModelAdmin):
     get_registration_client.short_description = "Müştəri"
 
 admin.site.register(CreditorModel)
-admin.site.unregister(Group)   
-
-admin.site.site_title = "Pure Water Administrasiyası"
-admin.site.site_header = "Pure Water Administrasiyası"

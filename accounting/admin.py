@@ -7,7 +7,13 @@ class DailyPaymentAdmin(admin.ModelAdmin):
     list_filter = ('date',)
 
     def get_client_name(self, obj):
-        return obj.installment.installmentinfo.registration.client.name if obj.installment else obj.installmentinfo.registration.client.name
+        if obj.installment:
+            return obj.installment.installmentinfo.registration.client.name
+        elif obj.extrapayment:
+            return obj.extrapayment.installmentinfo.registration.client.name
+        else:
+            return "---"
+
     get_client_name.short_description = "Müştəri"
 
     def get_month(self, obj):

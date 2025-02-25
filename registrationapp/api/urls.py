@@ -29,6 +29,7 @@ urlpatterns = [
     path('overduepayment-list/', views.OverduePaymentListAPIView.as_view(), name="overduepayment-list"),
     path('allpayment-list/', views.AllPaymentListAPIView.as_view(), name="allpayment-list"),
     path('changefilter-list/', views.ChangeFilterListAPIView.as_view(), name="changefilter-list"),
+    path('registration-changefilter-list/<int:id>/', views.RegistrationChangeFilterListAPIView.as_view(), name="registration-changefilter-list"),
     path('changefilter-retrieve-update-destroy/<int:id>/', views.ChangeFilterRetrieveUpdateDestroyAPIView.as_view(), name="changefilter-retrieve-update-destroy"),
     path('seller-list/', views.SellerListAPIView.as_view(), name="seller-list"),
     path('filter-changer-list-create/', views.FilterChangerListCreateAPIView.as_view(), name="filter-changer-list-create"),
