@@ -263,10 +263,11 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                     debt.save()
                     if x <= 0:
                         break
+                instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
                     instance.installmentinfo.registration.end_date = timezone.now().date
-                instance.installmentinfo.save()
+                    instance.installmentinfo.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "whatsapp":
