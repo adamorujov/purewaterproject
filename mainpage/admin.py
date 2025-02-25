@@ -25,9 +25,9 @@ admin.site.register(CategoryModel)
 @admin.register(OurProductModel)
 class OurProductAdmin(admin.ModelAdmin):
     list_display = ("__str__", "price", "category")
-    search_fields = ("title",)
+    search_fields = ("title", "category__name")
     list_filter = ("category",)
-    
+
 admin.site.register(TestimonialModel)
 
 admin.site.unregister(Group)   

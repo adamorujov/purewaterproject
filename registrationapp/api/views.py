@@ -451,7 +451,7 @@ class PersonaDailyPaymentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIVi
 # ---------- OverduePayment APIs ------------
 class OverduePaymentListAPIView(ListAPIView):
     def get_queryset(self):
-        return InstallmentModel.objects.filter(debt_amount__gt=0, installment_date__lte = timezone.now()).order_by("-id")
+        return InstallmentModel.objects.filter(installmentinfo__registration__status="A", debt_amount__gt=0, installment_date__lte = timezone.now()).order_by("-id")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
 
