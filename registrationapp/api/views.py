@@ -304,9 +304,6 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             else:
                 next_payment_amount = 0
                 next_payment_date = None
-                
-            print(instance.installmentinfo.installments.filter(debt_amount=F('installment_amount')))
-            print(next_payment)
 
             check_data = {
                 "name": client.name.split(" ")[0],
