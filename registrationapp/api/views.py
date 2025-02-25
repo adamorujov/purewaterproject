@@ -297,8 +297,14 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            # next_payment = InstallmentModel.objects.filter(installmentinfo=instance.installmentinfo, debt_amount=F('installment_amount'))[0]
-            next_payment = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))[0]
+            next_payments = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))
+            if next_payments:
+                next_payment_amount = next_payments[0].debt_amount
+                next_payment_date = next_payments[0].installment_date
+            else:
+                next_payment_amount = 0
+                next_payment_date = None
+                
             print(instance.installmentinfo.installments.filter(debt_amount=F('installment_amount')))
             print(next_payment)
 
@@ -314,8 +320,8 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 "overdue_amount": instance.debt_amount,
                 "overdue_date": instance.installment_date,
                 "remaining_amount": instance.installmentinfo.remaining_amount,
-                "next_payment_amount": next_payment.debt_amount,
-                "next_payment_date": next_payment.installment_date
+                "next_payment_amount": next_payment_amount,
+                "next_payment_date": next_payment_date
             }
             return Response(check_data, status=status.HTTP_200_OK)
         else:
@@ -391,7 +397,13 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             client_address += client.city.city_name + " ş. " if client.city else ""
             client_address += client.district.district_name + " r. " if client.district else ""
             client_address += client.village.village_name + " k. " if client.village else ""
-            next_payment = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))[0]
+            next_payments = instance.installmentinfo.installments.filter(debt_amount=F('installment_amount'))
+            if next_payments:
+                next_payment_amount = next_payments[0].debt_amount
+                next_payment_date = next_payments[0].installment_date
+            else:
+                next_payment_amount = 0
+                next_payment_date = None
             check_data = {
                 "name": client.name.split(" ")[0],
                 "surname": client.name.split(" ")[1] or " ",
@@ -402,8 +414,8 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 "payment_date": instance.payment_date,
                 "overdue_amount": instance.installmentinfo.overdue_amount,
                 "remaining_amount": instance.installmentinfo.remaining_amount,
-                "next_payment_amount": next_payment.debt_amount,
-                "next_payment_date": next_payment.installment_date
+                "next_payment_amount": next_payment_amount,
+                "next_payment_date": next_payment_date
             }
             return Response(check_data, status=status.HTTP_200_OK)
         else:
