@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from mainpage.models import SettingsModel, SocialMediaModel, ServiceModel, TestimonialModel
+from mainpage.models import SettingsModel, SocialMediaModel, ServiceModel, CategoryModel, OurProductModel, TestimonialModel
 
 class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +15,17 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceModel
         fields = "__all__" 
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurProductModel
+        fields = "__all__"
+
+class OurProductSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    class Meta:
+        model = OurProductModel
+        fields = "__all__"
 
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:

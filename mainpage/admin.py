@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mainpage.models import SettingsModel, ServiceModel, SocialMediaModel, TestimonialModel
+from mainpage.models import SettingsModel, ServiceModel, SocialMediaModel, CategoryModel, OurProductModel, TestimonialModel
 from django.contrib.auth.models import Group
 
 @admin.register(SettingsModel)
@@ -19,6 +19,15 @@ class SettingsAdmin(admin.ModelAdmin):
     
 admin.site.register(ServiceModel)
 admin.site.register(SocialMediaModel)
+
+admin.site.register(CategoryModel)
+
+@admin.register(OurProductModel)
+class OurProductAdmin(admin.ModelAdmin):
+    list_display = ("__str__", "price", "category")
+    search_fields = ("title",)
+    list_filter = ("category",)
+    
 admin.site.register(TestimonialModel)
 
 admin.site.unregister(Group)   
@@ -36,7 +45,9 @@ def get_app_list(self, request, app_label=None):
                     "Parametrlər": 1,
                     "Sosial medialar": 2,
                     "Xidmətlər": 3,
-                    "Müştəri rəyləri": 4
+                    "Kateqoriyalar": 4,
+                    "Məhsullar": 5,
+                    "Müştəri rəyləri": 6
                 }
                 app['models'].sort(key=lambda x: ordering[x['name']])
             if app['app_label'] == 'productapp':

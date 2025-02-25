@@ -59,7 +59,30 @@ class ServiceModel(models.Model):
         return self.title
 
 class CategoryModel(models.Model):
-    pass
+    name = models.CharField("Ad", max_length=200)
+
+    class Meta:
+        verbose_name = "Kateqoriya"
+        verbose_name_plural = "Kateqoriyalar"
+        ordering = ("-id",)
+
+    def __str__(self):
+        return self.name
+    
+class OurProductModel(models.Model):
+    title = models.TextField("Başlıq")
+    image = models.ImageField("Şəkil", upload_to="product_images/")
+    price = models.FloatField("Qiymət", default=0)
+    category = models.ForeignKey(CategoryModel, verbose_name="Kateqoriya", on_delete=models.CASCADE, related_name="ourproducts")
+
+    class Meta:
+        verbose_name = "Məhsul"
+        verbose_name_plural = "Məhsullar"
+        ordering = ("-id",)
+
+    def __str__(self):
+        return self.title
+
 
 class TestimonialModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=100)
