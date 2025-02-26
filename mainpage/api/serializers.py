@@ -18,7 +18,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = OurProductModel
+        model = CategoryModel
         fields = "__all__"
 
 class OurProductSerializer(serializers.ModelSerializer):
