@@ -314,7 +314,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 "payment_amount_with_word": corrected_num2words(instance.payment_amount),
                 "installment_date": instance.installment_date,
                 "payment_date": instance.payment_date,
-                "overdue_amount": instance.debt_amount,
+                "overdue_amount": instance.installmentinfo.overdue_amount,
                 "overdue_date": instance.installment_date,
                 "remaining_amount": instance.installmentinfo.remaining_amount,
                 "next_payment_amount": next_payment_amount,

@@ -15,7 +15,8 @@ class SettingsModel(models.Model):
     # banner
     banner_title = models.TextField("Başlıq", blank=True, null=True)
     banner_text = models.TextField("Mətn", blank=True, null=True)
-    banner_image = models.ImageField("Şəkil", upload_to="settings_images/", blank=True, null=True)
+    banner_image1 = models.ImageField("Şəkil 1", upload_to="settings_images/", blank=True, null=True)
+    banner_image2 = models.ImageField("Şəkil 2", upload_to="settings_images/", blank=True, null=True)
     # about
     about_text = models.TextField("Məzmun", blank=True, null=True)
     about_image1 = models.ImageField("Şəkil 1", upload_to="settings_images/", blank=True, null=True)
