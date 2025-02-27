@@ -276,10 +276,10 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             client = instance.installmentinfo.registration.client
             message = "%s %s\n\n%s\n%s\n\nÖdəniş %0.2f azn\n\nÖdəniş tarixi %s\n\nQalıq %0.2f\n" % (
                 client.name, client.father_name, client.phone_number1, client.phone_number2, 
-                instance.payment_amount, instance.payment_date, instance.installmentinfo.remaining_amount
+                instance.debt_amount, instance.installment_date, instance.installmentinfo.remaining_amount
             ) if client.phone_number2 else "%s %s\n\n%s\n\nÖdəniş %0.2f azn\n\nÖdəniş tarixi %s\n\nQalıq %0.2f\n" % (
                 client.name, client.father_name, client.phone_number1,
-                instance.payment_amount, instance.payment_date, instance.installmentinfo.remaining_amount
+                instance.debt_amount, instance.installment_date, instance.installmentinfo.remaining_amount
             )
             message += client.city.city_name + " " if client.city else ""
             message += client.district.district_name + " " if client.district else ""
