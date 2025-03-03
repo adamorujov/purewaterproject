@@ -239,7 +239,6 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             if serializer.is_valid():
                 instance.status = "OM"
                 x = instance.installment_amount
-                print(x)
                 serializer.save()
                 if instance.debt_amount == x:
                     instance.debt_amount = instance.installment_amount
@@ -259,7 +258,6 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
                 x = instance.payment_amount
                 for debt in debt_payments:
-                    print(debt.installment_date)
                     y = debt.debt_amount
                     debt.debt_amount = y - x if x < y else 0
                     x -= y
