@@ -238,7 +238,12 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
                 instance.status = "OM"
+                x = instance.installment_amount
+                print(x)
                 serializer.save()
+                if instance.debt_amount == x:
+                    instance.debt_amount = instance.installment_amount
+                    instance.save()
                 instance.installmentinfo.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
