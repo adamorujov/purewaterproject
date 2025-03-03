@@ -7,7 +7,7 @@ class SettingsAdmin(admin.ModelAdmin):
     fieldsets = (
         ("SAYTIN ƏSAS PARAMETRLƏRİ", {'fields': ('logo', 'slogan', 'favicon')}),
         ("META PARAMETRLƏR", {'fields': ('keywords', 'description')}),
-        ("BANNER", {'fields': ('banner_title', 'banner_text', 'banner_image')}), 
+        ("BANNER", {'fields': ('banner_title', 'banner_text', 'banner_image1', 'banner_image2')}), 
         ("HAQQIMIZDA", {'fields': ('about_text', 'about_image1', 'about_image2')}),  
         ("ƏLAQƏ MƏLUMATLARI", {'fields': ('contact_number', 'email', 'address')}), 
     )
