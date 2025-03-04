@@ -74,6 +74,7 @@ class OurProductModel(models.Model):
     title = models.TextField("Başlıq")
     image = models.ImageField("Şəkil", upload_to="product_images/")
     price = models.FloatField("Qiymət", default=0)
+    about = models.TextField("Haqqında", blank=True, null=True)
     category = models.ForeignKey(CategoryModel, verbose_name="Kateqoriya", on_delete=models.CASCADE, related_name="ourproducts")
 
     class Meta:

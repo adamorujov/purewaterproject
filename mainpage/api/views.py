@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from mainpage.models import SettingsModel, SocialMediaModel, ServiceModel, CategoryModel, OurProductModel, TestimonialModel
 from mainpage.api.serializers import SettingsSerializer, SocialMediaSerializer, ServiceSerializer, CategorySerializer, OurProductSerializer, TestimonialSerializer
 
@@ -23,6 +23,11 @@ class CategoryOurProductListAPIView(ListAPIView):
         id = self.kwargs.get("id")
         return OurProductModel.objects.filter(category__id=id)
     serializer_class = OurProductSerializer
+
+class OurProductRetrieveAPIView(RetrieveAPIView):
+    queryset = OurProductModel.objects.all()
+    serializer_class = OurProductSerializer
+    lookup_field = "id"
 
 class TestimonialListAPIView(ListAPIView):
     queryset = TestimonialModel.objects.all()
