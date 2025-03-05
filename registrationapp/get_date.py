@@ -26,3 +26,11 @@ def get_date(current_date, time): # time = 0.5, 1, 1.5, 2
             day = 28
 
     return date(year, month, day)
+
+
+def is_leap_year(year):
+    # If the year is divisible by 4 but not by 100, or if it's divisible by 400, it's a leap year.
+    if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
+        return True
+    else:
+        return False

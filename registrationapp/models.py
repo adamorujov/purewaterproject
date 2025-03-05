@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import date, datetime
 
 from django.dispatch import receiver
-from registrationapp.get_date import get_date
+from registrationapp.get_date import get_date, is_leap_year
 
 class ClientModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=50)
@@ -167,7 +167,9 @@ class InstallmentInfoModel(models.Model):
                     elif month in (4, 6, 9, 11) and day == 31:
                         day = 30
                     elif month == 2 and day > 28:
-                        day = 28
+                        day = 29 if is_leap_year(year) else 28
+                    else:
+                        day = self.start_date.day
                     if i < self.installment_count - 1:
                         InstallmentModel.objects.create(
                             installmentinfo = self,
