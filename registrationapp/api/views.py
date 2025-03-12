@@ -261,6 +261,7 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 dp_serializer.save()
                 # debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
                 x = instance.installmentinfo.paid_amount
+                i = 0
                 for installment in instance.installmentinfo.installments.all():
                     y = installment.installment_amount
                     installment.debt_amount = y - x if x < y else 0
@@ -269,8 +270,17 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                     installment.message_status = False
                     installment.payment_type = instance.payment_type
                     installment.save()
+                    i += 1
                     if x <= 0:
                         break
+
+                if i < instance.installmentinfo.installments.count() - 1:
+                    for installment in instance.installmentinfo.installments.all()[i:]:
+                        if installment.debt_amount != installment.installment_amount:
+                            installment.debt_amount = installment.installment_amount
+                            installment.save()
+                        else:
+                            break
                 # x = instance.payment_amount
                 # for debt in debt_payments:
                 #     y = debt.debt_amount
