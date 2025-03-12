@@ -6,6 +6,8 @@ from datetime import date, datetime
 from django.dispatch import receiver
 from registrationapp.get_date import get_date, is_leap_year
 
+from simple_history.models import HistoricalRecords
+
 class ClientModel(models.Model):
     name = models.CharField("Ad, Soyad", max_length=50)
     father_name = models.CharField("Ata adı", max_length=20)
@@ -217,6 +219,8 @@ class InstallmentModel(models.Model):
     status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
     message_status = models.BooleanField("Mesaj statusu", default=False)
 
+    history = HistoricalRecords()
+
     class Meta:
         verbose_name = "Taksit"
         verbose_name_plural = "Taksitlər"
@@ -244,6 +248,8 @@ class ExtraPaymentModel(models.Model):
     payment_amount = models.FloatField("Ödəniş miqdarı")
     payment_type = models.CharField("Ödəniş növü", max_length=2, choices=PAYMENT_TYPES, default="N")
     status = models.CharField("Status", max_length=2, choices=STATUS, default="OM")
+
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = "Əlavə ödəniş"

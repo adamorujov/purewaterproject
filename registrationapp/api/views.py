@@ -23,6 +23,8 @@ from django.db.models import Q, F, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
 from registrationapp.api.corrected_num2words import corrected_num2words
 
+from simple_history.utils import update_change_reason
+
 # ---------- Client APIs -------------
 class ClientCreateAPIView(CreateAPIView):
     queryset = ClientModel.objects.all()
@@ -241,6 +243,8 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 x = instance.installment_amount
                 serializer.save()
                 if instance.debt_amount == x:
+                    history = instance.history.first()
+                    history.delete()
                     instance.debt_amount = instance.installment_amount
                     instance.save()
                 instance.installmentinfo.save()
@@ -255,18 +259,29 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
-                x = instance.payment_amount
-                for debt in debt_payments:
-                    y = debt.debt_amount
-                    debt.debt_amount = y - x if x < y else 0
+                # debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
+                x = instance.installmentinfo.paid_amount
+                for installment in instance.installmentinfo.installments.all():
+                    y = installment.installment_amount
+                    installment.debt_amount = y - x if x < y else 0
                     x -= y
-                    debt.status = "O"
-                    debt.message_status = False
-                    debt.payment_type = instance.payment_type
-                    debt.save()
+                    installment.status = "O"
+                    installment.message_status = False
+                    installment.payment_type = instance.payment_type
+                    installment.save()
                     if x <= 0:
                         break
+                # x = instance.payment_amount
+                # for debt in debt_payments:
+                #     y = debt.debt_amount
+                #     debt.debt_amount = y - x if x < y else 0
+                #     x -= y
+                #     debt.status = "O"
+                #     debt.message_status = False
+                #     debt.payment_type = instance.payment_type
+                #     debt.save()
+                #     if x <= 0:
+                #         break
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
@@ -324,6 +339,23 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 "next_payment_date": next_payment_date
             }
             return Response(check_data, status=status.HTTP_200_OK)
+        elif action == "history":
+            history = instance.history.all()
+            history_data = [
+                {
+                    "version": idx + 1,
+                    "installment_date": record.installment_date,
+                    "installment_amount": record.installment_amount,
+                    "payment_date": record.payment_date,
+                    "payment_amount": record.payment_amount,
+                    "debt_amount": record.debt_amount,
+                    "payment_type": record.payment_type,
+                    "status": record.status,
+                    "message_status": record.message_status
+                }
+                for idx, record in enumerate(history)
+            ]
+            return Response(history_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
         

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from registrationapp.models import (
     ClientModel, SellerModel, PaymentModel, RegistrationModel,
     InstallmentInfoModel, InstallmentModel, ChangeFilterModel, FilterChangerModel,
-    ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel                        
+    ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel                       
 )
 from accounting.models import DailyPaymentModel, PersonaDailyPaymentModel
 from productapp.api.serializers import ProductSerializer, CitySerializer, DistrictSerializer, VillageSerializer, GiftSerializer

@@ -1,7 +1,8 @@
 from django.contrib import admin
 from registrationapp.models import (ClientModel, PaymentModel, SellerModel, RegistrationModel, InstallmentInfoModel, InstallmentModel,
-FilterChangerModel, ChangeFilterModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel
+FilterChangerModel, ChangeFilterModel, ServicerModel, ShuttleServiceModel, ExtraPaymentModel, CreditorModel,
 )
+from simple_history.admin import SimpleHistoryAdmin
 
 
 @admin.register(ClientModel)
@@ -30,7 +31,7 @@ class InstallmentInfoAdmin(admin.ModelAdmin):
     get_down_payment_amount.short_description = "İlkin ödənilən məbləğ"   
 
 @admin.register(InstallmentModel)
-class InstallmentAdmin(admin.ModelAdmin):
+class InstallmentAdmin(SimpleHistoryAdmin):
     list_display = ('__str__', 'installment_date', 'installment_amount', 'payment_date', 'payment_amount', 'debt_amount', 'payment_type', 'status', 'message_status')
     ordering = ("id",)
     search_fields = ('installmentinfo__registration__client__name', 'installmentinfo__registration__client__father_name')
