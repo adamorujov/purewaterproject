@@ -484,6 +484,8 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                             installment.save()
                         else:
                             break
+                instance.status = "O"
+                instance.save()
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
@@ -598,6 +600,10 @@ class AllPaymentListAPIView(ListAPIView):
         return InstallmentModel.objects.filter(installmentinfo__registration__status="A").order_by("installment_date")
     serializer_class = InstallmentSerializer
     permission_classes = (IsAdminUser,)
+
+class AllExtraPaymentListAPIView(ListAPIView):
+    def get_queryset(self):
+        return super().get_queryset()
 
 # ------------ ChangeFilter APIs --------------
 class ChangeFilterListAPIView(ListAPIView):
