@@ -193,6 +193,53 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "installment":
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                if not InstallmentModel.objects.filter(installmentinfo=instance).exists():
+                    day = instance.start_date.day
+                    month = instance.start_date.month
+                    year = instance.start_date.year
+                    InstallmentModel.objects.create(
+                        installmentinfo = instance,
+                        installment_date = date(year, month, day),
+                        installment_amount = instance.total_amount - instance.payment_amount,
+                        payment_amount = 0,
+                        debt_amount = instance.total_amount - instance.payment_amount
+                    )
+                    remainder = 0
+                    for i in range(instance.installment_count):
+                        month = month + 1
+                        if month == 13:
+                            month = 1
+                            year = year + 1
+                        elif month in (4, 6, 9, 11) and day == 31:
+                            day = 30
+                        elif month == 2 and day > 28:
+                            day = 29 if is_leap_year(year) else 28
+                        else:
+                            day = instance.start_date.day
+                        if i < instance.installment_count - 1:
+                            InstallmentModel.objects.create(
+                                installmentinfo = instance,
+                                installment_date = date(year, month, day),
+                                installment_amount = round(instance.payment_amount / instance.installment_count),
+                                payment_amount = 0,
+                                debt_amount = round(instance.payment_amount / instance.installment_count),
+                            )
+                            remainder += instance.payment_amount / instance.installment_count - round(instance.payment_amount / instance.installment_count)
+                        else:
+                            InstallmentModel.objects.create(
+                                installmentinfo = instance,
+                                installment_date = date(year, month, day),
+                                installment_amount = round(instance.payment_amount / instance.installment_count + remainder, 2),
+                                payment_amount = 0,
+                                debt_amount = round(instance.payment_amount / instance.installment_count + remainder, 2),
+                            )
+                    return Response({"success": "Taksit məlumatları yaradıldı"}, status=status.HTTP_200_OK)
+                return Response({"error": "Taksit məlumatları artıq mövcuddur."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif action == "refund":
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             if serializer.is_valid():
@@ -202,8 +249,20 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 instance.registration.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif action == "amount":
+            amounts = request.data.get("amounts", [])
+            amounts = [float(amount) for amount in amounts]
+            installments = instance.installments.all()
+            for amount, installment in zip(amounts, installments):
+                installment.installment_amount = amount
+                installment.save()
+            return Response({"success": "Plan üzrə məbləğlər yeniləndi."}, status=status.HTTP_200_OK)
+            
         elif action == "delete":
             instance.installments.all().delete()
+            instance.extrapayments.all().delete()
+            instance.save()
+
             return Response({"success": "Taksitlər silindi."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified"}, status=status.HTTP_400_BAD_REQUEST)
@@ -259,7 +318,6 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                # debt_payments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
                 x = instance.installmentinfo.paid_amount
                 i = 0
                 for installment in instance.installmentinfo.installments.all():
@@ -273,25 +331,15 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                     i += 1
                     if x <= 0:
                         break
-
                 if i < instance.installmentinfo.installments.count() - 1:
                     for installment in instance.installmentinfo.installments.all()[i:]:
                         if installment.debt_amount != installment.installment_amount:
                             installment.debt_amount = installment.installment_amount
+                            installment.status = "OM"
+                            installment.message_status = False
                             installment.save()
                         else:
                             break
-                # x = instance.payment_amount
-                # for debt in debt_payments:
-                #     y = debt.debt_amount
-                #     debt.debt_amount = y - x if x < y else 0
-                #     x -= y
-                #     debt.status = "O"
-                #     debt.message_status = False
-                #     debt.payment_type = instance.payment_type
-                #     debt.save()
-                #     if x <= 0:
-                #         break
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
@@ -413,19 +461,29 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             dp_serializer = DailyPaymentCreateSerializer(data=payment_data)
             if dp_serializer.is_valid():
                 dp_serializer.save()
-                debt_installments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
-                x = instance.payment_amount
-                for debt in debt_installments:
-                    y = debt.debt_amount
-                    debt.debt_amount = y - x if x < y else 0
+                instance.installmentinfo.save()
+                x = instance.installmentinfo.paid_amount
+                i = 0
+                for installment in instance.installmentinfo.installments.all():
+                    y = installment.installment_amount
+                    installment.debt_amount = y - x if x < y else 0
                     x -= y
-                    debt.status = "O"
-                    debt.payment_type = instance.payment_type
-                    debt.save()
+                    installment.status = "O"
+                    installment.message_status = False
+                    installment.payment_type = instance.payment_type
+                    installment.save()
+                    i += 1
                     if x <= 0:
                         break
-                instance.status = "O"
-                instance.save()
+                if i < instance.installmentinfo.installments.count() - 1:
+                    for installment in instance.installmentinfo.installments.all()[i:]:
+                        if installment.debt_amount != installment.installment_amount:
+                            installment.debt_amount = installment.installment_amount
+                            installment.status = "OM"
+                            installment.message_status = False
+                            installment.save()
+                        else:
+                            break
                 instance.installmentinfo.save()
                 if instance.installmentinfo.remaining_amount == 0:
                     instance.installmentinfo.registration.status = "OT"
@@ -433,6 +491,28 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                     instance.installmentinfo.registration.save()
                 return Response(payment_data, status=status.HTTP_200_OK)
             return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
+            # if dp_serializer.is_valid():
+            #     dp_serializer.save()
+            #     debt_installments = instance.installmentinfo.installments.filter(debt_amount__gt=0)
+            #     x = instance.payment_amount
+            #     for debt in debt_installments:
+            #         y = debt.debt_amount
+            #         debt.debt_amount = y - x if x < y else 0
+            #         x -= y
+            #         debt.status = "O"
+            #         debt.payment_type = instance.payment_type
+            #         debt.save()
+            #         if x <= 0:
+            #             break
+            #     instance.status = "O"
+            #     instance.save()
+            #     instance.installmentinfo.save()
+            #     if instance.installmentinfo.remaining_amount == 0:
+            #         instance.installmentinfo.registration.status = "OT"
+            #         instance.installmentinfo.registration.end_date = timezone.now().date()
+            #         instance.installmentinfo.registration.save()
+            #     return Response(payment_data, status=status.HTTP_200_OK)
+            # return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
             client = instance.installmentinfo.registration.client
             client_address = ""
@@ -460,6 +540,19 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 "next_payment_date": next_payment_date
             }
             return Response(check_data, status=status.HTTP_200_OK)
+        elif action == "history":
+            history = instance.history.all()
+            history_data = [
+                {
+                    "version": idx + 1,
+                    "payment_date": record.payment_date,
+                    "payment_amount": record.payment_amount,
+                    "payment_type": record.payment_type,
+                    "status": record.status
+                }
+                for idx, record in enumerate(history)
+            ]
+            return Response(history_data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 

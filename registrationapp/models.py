@@ -149,46 +149,6 @@ class InstallmentInfoModel(models.Model):
 
     def save(self, *args, **kwargs):
         if self.id:
-            if not InstallmentModel.objects.filter(installmentinfo=self).exists():
-                day = self.start_date.day
-                month = self.start_date.month
-                year = self.start_date.year
-                InstallmentModel.objects.create(
-                    installmentinfo = self,
-                    installment_date = date(year, month, day),
-                    installment_amount = self.total_amount - self.payment_amount,
-                    payment_amount = 0,
-                    debt_amount = self.total_amount - self.payment_amount
-                )
-                remainder = 0
-                for i in range(self.installment_count):
-                    month = month + 1
-                    if month == 13:
-                        month = 1
-                        year = year + 1
-                    elif month in (4, 6, 9, 11) and day == 31:
-                        day = 30
-                    elif month == 2 and day > 28:
-                        day = 29 if is_leap_year(year) else 28
-                    else:
-                        day = self.start_date.day
-                    if i < self.installment_count - 1:
-                        InstallmentModel.objects.create(
-                            installmentinfo = self,
-                            installment_date = date(year, month, day),
-                            installment_amount = round(self.payment_amount / self.installment_count),
-                            payment_amount = 0,
-                            debt_amount = round(self.payment_amount / self.installment_count),
-                        )
-                        remainder += self.payment_amount / self.installment_count - round(self.payment_amount / self.installment_count)
-                    else:
-                        InstallmentModel.objects.create(
-                            installmentinfo = self,
-                            installment_date = date(year, month, day),
-                            installment_amount = round(self.payment_amount / self.installment_count + remainder, 2),
-                            payment_amount = 0,
-                            debt_amount = round(self.payment_amount / self.installment_count + remainder, 2),
-                        )
             paid_amounts = [installment.payment_amount for installment in self.installments.all()]
             extra_paid_amounts = [extra_payment.payment_amount for extra_payment in self.extrapayments.all()]
             overdue_amounts = [installment.debt_amount for installment in self.installments.all() if installment.installment_date <= datetime.now().date()]
