@@ -67,7 +67,7 @@ class SellerDataRetrieveAPIView(RetrieveAPIView):
             result_data = []
             m_count = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month
             all_months = []
-            x, y= start_date.month, start_date.year
+            x, y = start_date.month, start_date.year
             for m in range(m_count + 1):
                 all_months.append([x, y])
                 if x < 12:
@@ -398,22 +398,36 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             }
             return Response(check_data, status=status.HTTP_200_OK)
         elif action == "history":
-            history = instance.history.all()
-            history_data = [
-                {
-                    "version": idx + 1,
-                    "installment_date": record.installment_date,
-                    "installment_amount": record.installment_amount,
-                    "payment_date": record.payment_date,
-                    "payment_amount": record.payment_amount,
-                    "debt_amount": record.debt_amount,
-                    "payment_type": record.payment_type,
-                    "status": record.status,
-                    "message_status": record.message_status
-                }
-                for idx, record in enumerate(history)
-            ]
-            return Response(history_data, status=status.HTTP_200_OK)
+            # history = instance.history.all()
+            # history_data = [
+            #     {
+            #         "version": idx + 1,
+            #         "installment_date": record.installment_date,
+            #         "installment_amount": record.installment_amount,
+            #         "payment_date": record.payment_date,
+            #         "payment_amount": record.payment_amount,
+            #         "debt_amount": record.debt_amount,
+            #         "payment_type": record.payment_type,
+            #         "status": record.status,
+            #         "message_status": record.message_status
+            #     }
+            #     for idx, record in enumerate(history)
+            # ]
+
+            # return Response(history_data, status=status.HTTP_200_OK)
+            if instance.history.all().count() > 1:
+                history = instance.history.all()[1]
+                # instance.installment_date = history.installment_date
+                # instance.installment_amount = history.installment_amount
+                instance.payment_date = history.payment_date
+                instance.payment_amount = history.payment_amount
+                instance.debt_amount = history.debt_amount
+                instance.payment_type = history.payment_type
+                instance.status = history.status
+                instance.message_status = history.message_status
+                instance.save()
+                return Response({"message": "Ödəniş geri qaytarıldı."}, status=status.HTTP_200_OK)
+            return Response({"errors": "Ödəniş edilməyib"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
         
