@@ -426,6 +426,8 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 instance.status = history.status
                 instance.message_status = history.message_status
                 instance.save()
+                dailypayment = DailyPaymentModel.objects.filter(installment=instance).last()
+                dailypayment.delete()
                 return Response({"message": "Ödəniş geri qaytarıldı."}, status=status.HTTP_200_OK)
             return Response({"errors": "Ödəniş edilməyib"}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -557,18 +559,32 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             }
             return Response(check_data, status=status.HTTP_200_OK)
         elif action == "history":
-            history = instance.history.all()
-            history_data = [
-                {
-                    "version": idx + 1,
-                    "payment_date": record.payment_date,
-                    "payment_amount": record.payment_amount,
-                    "payment_type": record.payment_type,
-                    "status": record.status
-                }
-                for idx, record in enumerate(history)
-            ]
-            return Response(history_data, status=status.HTTP_200_OK)
+            # history = instance.history.all()
+            # history_data = [
+            #     {
+            #         "version": idx + 1,
+            #         "payment_date": record.payment_date,
+            #         "payment_amount": record.payment_amount,
+            #         "payment_type": record.payment_type,
+            #         "status": record.status
+            #     }
+            #     for idx, record in enumerate(history)
+            # ]
+            # return Response(history_data, status=status.HTTP_200_OK)
+            if instance.history.all().count() > 1:
+                history = instance.history.all()[1]
+                # instance.installment_date = history.installment_date
+                # instance.installment_amount = history.installment_amount
+                instance.payment_date = history.payment_date
+                instance.payment_amount = history.payment_amount
+                instance.debt_amount = history.debt_amount
+                instance.payment_type = history.payment_type
+                instance.status = history.status
+                instance.save()
+                dailypayment = DailyPaymentModel.objects.filter(extrapayment=instance).last()
+                dailypayment.delete()
+                return Response({"message": "Ödəniş geri qaytarıldı."}, status=status.HTTP_200_OK)
+            return Response({"errors": "Ödəniş edilməyib"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "Invalid action specified."}, status=status.HTTP_400_BAD_REQUEST)
 
