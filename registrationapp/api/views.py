@@ -250,13 +250,16 @@ class InstallmentInfoRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif action == "amount":
-            amounts = request.data.get("amounts", [])
-            amounts = [float(amount) for amount in amounts]
+            installment_amounts = request.data.get("amounts", [])
+            debt_amounts = request.data.get("debt_amounts", [])
+            installment_amounts = [float(amount) for amount in installment_amounts]
+            debt_amounts = [float(amount) for amount in debt_amounts]
             installments = instance.installments.all()
-            for amount, installment in zip(amounts, installments):
-                installment.installment_amount = amount
+            for installment_amount, debt_amount, installment in zip(installment_amounts, debt_amounts, installments):
+                installment.installment_amount = installment_amount
+                installment.debt_amount = debt_amount
                 installment.save()
-            return Response({"success": "Plan üzrə məbləğlər yeniləndi."}, status=status.HTTP_200_OK)
+            return Response({"success": "Plan üzrə və qalıq məbləğlər yeniləndi."}, status=status.HTTP_200_OK)
             
         elif action == "delete":
             instance.installments.all().delete()
