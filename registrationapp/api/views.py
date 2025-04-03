@@ -418,16 +418,17 @@ class InstallmentUpdateAPIView(UpdateAPIView):
             # ]
 
             # return Response(history_data, status=status.HTTP_200_OK)
-            if instance.history.all().count() > 1:
-                history = instance.history.all()[1]
+            if instance.history.all().count() > 2:
+                history1 = instance.history.all()[1]
+                history2 = instance.history.all()[2]
                 # instance.installment_date = history.installment_date
                 # instance.installment_amount = history.installment_amount
-                instance.payment_date = history.payment_date
-                instance.payment_amount = history.payment_amount
-                instance.debt_amount = history.debt_amount
-                instance.payment_type = history.payment_type
-                instance.status = history.status
-                instance.message_status = history.message_status
+                instance.payment_date = history2.payment_date
+                instance.payment_amount = history2.payment_amount
+                instance.debt_amount = history2.debt_amount
+                instance.payment_type = history2.payment_type
+                instance.status = history2.status
+                instance.message_status = history2.message_status
                 instance.save()
                 dailypayment = DailyPaymentModel.objects.filter(installment=instance).last()
                 dailypayment.delete()
@@ -575,17 +576,28 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             # ]
             # return Response(history_data, status=status.HTTP_200_OK)
             if instance.history.all().count() > 1:
+                amount = instance.payment_amount
                 history = instance.history.all()[1]
                 # instance.installment_date = history.installment_date
                 # instance.installment_amount = history.installment_amount
                 instance.payment_date = history.payment_date
                 instance.payment_amount = history.payment_amount
-                instance.debt_amount = history.debt_amount
                 instance.payment_type = history.payment_type
                 instance.status = history.status
                 instance.save()
                 dailypayment = DailyPaymentModel.objects.filter(extrapayment=instance).last()
                 dailypayment.delete()
+                print(instance.installmentinfo.installments.filter(status="O").order_by("-id"))
+                for installment in instance.installmentinfo.installments.filter(status="O").order_by("-id"):
+                    x = installment.installment_amount - installment.debt_amount
+                    if amount >= installment.installment_amount - installment.debt_amount:
+                        installment.debt_amount = installment.installment_amount
+                    else:
+                        installment.debt_amount += amount
+                    amount -= x
+                    installment.save()
+                    if amount <= 0:
+                        break
                 return Response({"message": "Ödəniş geri qaytarıldı."}, status=status.HTTP_200_OK)
             return Response({"errors": "Ödəniş edilməyib"}, status=status.HTTP_400_BAD_REQUEST)
         else:
