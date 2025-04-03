@@ -599,6 +599,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                     installment.save()
                     if amount <= 0:
                         break
+                instance.delete()
                 return Response({"message": "Ödəniş geri qaytarıldı."}, status=status.HTTP_200_OK)
             return Response({"errors": "Ödəniş edilməyib"}, status=status.HTTP_400_BAD_REQUEST)
         else:
