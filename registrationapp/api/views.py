@@ -595,6 +595,7 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                     else:
                         installment.debt_amount += amount
                     amount -= x
+                    installment.status = "OM"
                     installment.save()
                     if amount <= 0:
                         break
