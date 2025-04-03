@@ -372,6 +372,11 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 return Response({"errors": "Kreditorun nömrəsi təyin edilməyib."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
             client = instance.installmentinfo.registration.client
+            client_name = client.name.split(" ")[0]
+            if len(client.name.split()) > 1:
+                client_surname = client.name.split()[1]
+            else:
+                client_surname = ""
             client_address = ""
             client_address += client.city.city_name + " " if client.city else ""
             client_address += client.district.district_name + " " if client.district else ""
@@ -385,8 +390,8 @@ class InstallmentUpdateAPIView(UpdateAPIView):
                 next_payment_date = None
 
             check_data = {
-                "name": client.name.split(" ")[0],
-                "surname": client.name.split(" ")[1] or " ",
+                "name": client_name,
+                "surname": client_surname,
                 "father_name": client.father_name or " ",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
@@ -537,6 +542,11 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             # return Response({"errors": "Error! Sent data was not correct."}, status=status.HTTP_400_BAD_REQUEST)
         elif action == "check":
             client = instance.installmentinfo.registration.client
+            client_name = client.name.split(" ")[0]
+            if len(client.name.split()) > 1:
+                client_surname = client.name.split()[1]
+            else:
+                client_surname = ""
             client_address = ""
             client_address += client.city.city_name + " " if client.city else ""
             client_address += client.district.district_name + " " if client.district else ""
@@ -549,9 +559,9 @@ class ExtraPaymentRetrieveUpdateAPIView(RetrieveUpdateAPIView):
                 next_payment_amount = 0
                 next_payment_date = None
             check_data = {
-                "name": client.name.split(" ")[0],
-                "surname": client.name.split(" ")[1] or " ",
-                "father_name": client.father_name or " ",
+                "name": client_name,
+                "surname": client_surname,
+                "father_name": client.father_name or "",
                 "address": client_address,
                 "payment_amount_with_digit": instance.payment_amount,
                 "payment_amount_with_word": corrected_num2words(instance.payment_amount),
